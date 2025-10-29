@@ -1,0 +1,408 @@
+{% extends 'base/base.html' %}
+{% load crispy_forms_tags %}
+
+{% block title %}Inscription Association - AidConnect{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <!-- En-tête -->
+    <div class="text-center mb-8">
+        <h1 class="text-3xl font-bold text-gray-900 mb-4">
+            <i class="fas fa-building text-blue-600 mr-3"></i>
+            Inscription Association
+        </h1>
+        <p class="text-lg text-gray-600">
+            Créez votre compte association pour rejoindre notre plateforme de soutien
+        </p>
+    </div>
+
+    <!-- Formulaire d'inscription -->
+    <div class="card">
+        <div class="card-header">
+            <h2 class="text-xl font-semibold text-gray-900">
+                <i class="fas fa-user-plus mr-2"></i>Informations de connexion
+            </h2>
+            <p class="text-sm text-gray-600 mt-1">
+                Créez votre compte utilisateur pour gérer votre association
+            </p>
+        </div>
+        
+        <div class="card-body">
+            <form method="post" enctype="multipart/form-data" id="register-form">
+                {% csrf_token %}
+                
+                <!-- Informations utilisateur -->
+                <div class="mb-8">
+                    <h3 class="text-lg font-semibold text-gray-900 mb-4">
+                        <i class="fas fa-user mr-2"></i>Compte utilisateur
+                    </h3>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <!-- Nom d'utilisateur -->
+                        <div>
+                            <label for="{{ user_form.username.id_for_label }}" class="form-label">
+                                <i class="fas fa-at mr-1"></i>Nom d'utilisateur *
+                            </label>
+                            {{ user_form.username }}
+                            {% if user_form.username.errors %}
+                                <div class="invalid-feedback">{{ user_form.username.errors.0 }}</div>
+                            {% endif %}
+                        </div>
+
+                        <!-- Email -->
+                        <div>
+                            <label for="{{ user_form.email.id_for_label }}" class="form-label">
+                                <i class="fas fa-envelope mr-1"></i>Email *
+                            </label>
+                            {{ user_form.email }}
+                            {% if user_form.email.errors %}
+                                <div class="invalid-feedback">{{ user_form.email.errors.0 }}</div>
+                            {% endif %}
+                        </div>
+
+                        <!-- Prénom -->
+                        <div>
+                            <label for="{{ user_form.first_name.id_for_label }}" class="form-label">
+                                <i class="fas fa-user mr-1"></i>Prénom *
+                            </label>
+                            {{ user_form.first_name }}
+                            {% if user_form.first_name.errors %}
+                                <div class="invalid-feedback">{{ user_form.first_name.errors.0 }}</div>
+                            {% endif %}
+                        </div>
+
+                        <!-- Nom -->
+                        <div>
+                            <label for="{{ user_form.last_name.id_for_label }}" class="form-label">
+                                <i class="fas fa-user mr-1"></i>Nom *
+                            </label>
+                            {{ user_form.last_name }}
+                            {% if user_form.last_name.errors %}
+                                <div class="invalid-feedback">{{ user_form.last_name.errors.0 }}</div>
+                            {% endif %}
+                        </div>
+
+                        <!-- Mot de passe -->
+                        <div>
+                            <label for="{{ user_form.password1.id_for_label }}" class="form-label">
+                                <i class="fas fa-lock mr-1"></i>Mot de passe *
+                            </label>
+                            {{ user_form.password1 }}
+                            {% if user_form.password1.errors %}
+                                <div class="invalid-feedback">{{ user_form.password1.errors.0 }}</div>
+                            {% endif %}
+                        </div>
+
+                        <!-- Confirmation mot de passe -->
+                        <div>
+                            <label for="{{ user_form.password2.id_for_label }}" class="form-label">
+                                <i class="fas fa-lock mr-1"></i>Confirmer le mot de passe *
+                            </label>
+                            {{ user_form.password2 }}
+                            {% if user_form.password2.errors %}
+                                <div class="invalid-feedback">{{ user_form.password2.errors.0 }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Informations association -->
+                <div class="mb-8">
+                    <h3 class="text-lg font-semibold text-gray-900 mb-4">
+                        <i class="fas fa-building mr-2"></i>Informations de l'association
+                    </h3>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <!-- Nom de l'association -->
+                        <div>
+                            <label for="{{ association_form.nom.id_for_label }}" class="form-label">
+                                <i class="fas fa-building mr-1"></i>Nom de l'association *
+                            </label>
+                            {{ association_form.nom }}
+                            {% if association_form.nom.errors %}
+                                <div class="invalid-feedback">{{ association_form.nom.errors.0 }}</div>
+                            {% endif %}
+                        </div>
+
+                        <!-- Type d'association -->
+                        <div>
+                            <label for="{{ association_form.type_association.id_for_label }}" class="form-label">
+                                <i class="fas fa-tag mr-1"></i>Type d'association *
+                            </label>
+                            {{ association_form.type_association }}
+                            {% if association_form.type_association.errors %}
+                                <div class="invalid-feedback">{{ association_form.type_association.errors.0 }}</div>
+                            {% endif %}
+                        </div>
+
+                        <!-- Zone d'intervention -->
+                        <div>
+                            <label for="{{ association_form.zone_intervention.id_for_label }}" class="form-label">
+                                <i class="fas fa-map-marker-alt mr-1"></i>Zone d'intervention *
+                            </label>
+                            {{ association_form.zone_intervention }}
+                            {% if association_form.zone_intervention.errors %}
+                                <div class="invalid-feedback">{{ association_form.zone_intervention.errors.0 }}</div>
+                            {% endif %}
+                        </div>
+
+                        <!-- Téléphone -->
+                        <div>
+                            <label for="{{ association_form.contact_telephone.id_for_label }}" class="form-label">
+                                <i class="fas fa-phone mr-1"></i>Téléphone *
+                            </label>
+                            {{ association_form.contact_telephone }}
+                            {% if association_form.contact_telephone.errors %}
+                                <div class="invalid-feedback">{{ association_form.contact_telephone.errors.0 }}</div>
+                            {% endif %}
+                        </div>
+
+                        <!-- Email de contact -->
+                        <div>
+                            <label for="{{ association_form.contact_email.id_for_label }}" class="form-label">
+                                <i class="fas fa-envelope mr-1"></i>Email de contact *
+                            </label>
+                            {{ association_form.contact_email }}
+                            {% if association_form.contact_email.errors %}
+                                <div class="invalid-feedback">{{ association_form.contact_email.errors.0 }}</div>
+                            {% endif %}
+                        </div>
+
+                        <!-- Site web -->
+                        <div>
+                            <label for="{{ association_form.site_web.id_for_label }}" class="form-label">
+                                <i class="fas fa-globe mr-1"></i>Site web
+                            </label>
+                            {{ association_form.site_web }}
+                            {% if association_form.site_web.errors %}
+                                <div class="invalid-feedback">{{ association_form.site_web.errors.0 }}</div>
+                            {% endif %}
+                        </div>
+
+                        <!-- Logo -->
+                        <div class="md:col-span-2">
+                            <label for="{{ association_form.logo.id_for_label }}" class="form-label">
+                                <i class="fas fa-image mr-1"></i>Logo de l'association
+                            </label>
+                            {{ association_form.logo }}
+                            {% if association_form.logo.errors %}
+                                <div class="invalid-feedback">{{ association_form.logo.errors.0 }}</div>
+                            {% endif %}
+                            <p class="text-sm text-gray-500 mt-1">
+                                Format recommandé : JPG, PNG (max 2MB)
+                            </p>
+                        </div>
+
+                        <!-- Adresse -->
+                        <div class="md:col-span-2">
+                            <label for="{{ association_form.adresse.id_for_label }}" class="form-label">
+                                <i class="fas fa-map-marker-alt mr-1"></i>Adresse *
+                            </label>
+                            {{ association_form.adresse }}
+                            {% if association_form.adresse.errors %}
+                                <div class="invalid-feedback">{{ association_form.adresse.errors.0 }}</div>
+                            {% endif %}
+                        </div>
+
+                        <!-- Description -->
+                        <div class="md:col-span-2">
+                            <label for="{{ association_form.description.id_for_label }}" class="form-label">
+                                <i class="fas fa-align-left mr-1"></i>Description de l'association *
+                            </label>
+                            {{ association_form.description }}
+                            {% if association_form.description.errors %}
+                                <div class="invalid-feedback">{{ association_form.description.errors.0 }}</div>
+                            {% endif %}
+                        </div>
+
+                        <!-- Compte Mobile Money -->
+                        <div>
+                            <label for="{{ association_form.compte_mobile_money.id_for_label }}" class="form-label">
+                                <i class="fas fa-mobile-alt mr-1"></i>Compte Mobile Money
+                            </label>
+                            {{ association_form.compte_mobile_money }}
+                            {% if association_form.compte_mobile_money.errors %}
+                                <div class="invalid-feedback">{{ association_form.compte_mobile_money.errors.0 }}</div>
+                            {% endif %}
+                        </div>
+
+                        <!-- Compte PayPal -->
+                        <div>
+                            <label for="{{ association_form.compte_paypal.id_for_label }}" class="form-label">
+                                <i class="fab fa-paypal mr-1"></i>Compte PayPal
+                            </label>
+                            {{ association_form.compte_paypal }}
+                            {% if association_form.compte_paypal.errors %}
+                                <div class="invalid-feedback">{{ association_form.compte_paypal.errors.0 }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Informations importantes -->
+                <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
+                    <h4 class="font-semibold text-blue-900 mb-2">
+                        <i class="fas fa-info-circle mr-2"></i>Informations importantes
+                    </h4>
+                    <ul class="text-sm text-blue-800 space-y-1">
+                        <li>• Votre association sera vérifiée avant activation</li>
+                        <li>• Vous recevrez un email de confirmation</li>
+                        <li>• Les informations de contact seront visibles publiquement</li>
+                        <li>• Vous pourrez gérer vos signalements et besoins urgents</li>
+                    </ul>
+                </div>
+
+                <!-- Boutons -->
+                <div class="flex flex-col sm:flex-row gap-4">
+                    <button type="submit" class="btn btn-primary flex-1">
+                        <i class="fas fa-user-plus mr-2"></i>Créer mon compte association
+                    </button>
+                    <a href="{% url 'associations:liste' %}" class="btn btn-secondary flex-1">
+                        <i class="fas fa-list mr-2"></i>Voir les associations
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Avantages -->
+    <div class="mt-8 grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div class="card">
+            <div class="card-body text-center">
+                <i class="fas fa-users text-3xl text-blue-600 mb-2"></i>
+                <h3 class="text-lg font-semibold text-gray-900">Communauté</h3>
+                <p class="text-sm text-gray-600">Rejoignez un réseau d'associations engagées</p>
+            </div>
+        </div>
+        
+        <div class="card">
+            <div class="card-body text-center">
+                <i class="fas fa-bell text-3xl text-green-600 mb-2"></i>
+                <h3 class="text-lg font-semibold text-gray-900">Signalements</h3>
+                <p class="text-sm text-gray-600">Recevez des alertes pour vos zones d'intervention</p>
+            </div>
+        </div>
+        
+        <div class="card">
+            <div class="card-body text-center">
+                <i class="fas fa-heart text-3xl text-purple-600 mb-2"></i>
+                <h3 class="text-lg font-semibold text-gray-900">Impact</h3>
+                <p class="text-sm text-gray-600">Mesurez l'impact de vos actions</p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Validation du formulaire
+    const form = document.getElementById('register-form');
+    form.addEventListener('submit', function(e) {
+        // La validation HTML5 native sera utilisée
+        // On laisse Django gérer la validation côté serveur
+        console.log('Formulaire soumis');
+    });
+
+    // Validation des mots de passe
+    const password1 = document.getElementById('id_password1');
+    const password2 = document.getElementById('id_password2');
+    
+    if (password1 && password2) {
+        password2.addEventListener('input', function() {
+            if (password1.value !== password2.value) {
+                password2.setCustomValidity('Les mots de passe ne correspondent pas');
+                password2.classList.add('border-red-500');
+            } else {
+                password2.setCustomValidity('');
+                password2.classList.remove('border-red-500');
+            }
+        });
+    }
+
+    // Formatage du téléphone
+    const phoneInputs = document.querySelectorAll('input[type="tel"], input[name*="telephone"]');
+    phoneInputs.forEach(input => {
+        input.addEventListener('input', function(e) {
+            let value = e.target.value.replace(/\D/g, '');
+            if (value.startsWith('221')) {
+                value = '+' + value;
+            } else if (value.startsWith('0')) {
+                value = '+221' + value.substring(1);
+            } else if (value && !value.startsWith('+')) {
+                value = '+221' + value;
+            }
+            e.target.value = value;
+        });
+    });
+});
+
+// Fonction pour afficher les notifications
+function showNotification(message, type = 'info') {
+    const notification = document.createElement('div');
+    notification.className = `fixed top-4 right-4 z-50 p-4 rounded-lg shadow-lg max-w-sm ${getNotificationClass(type)}`;
+    notification.innerHTML = `
+        <div class="flex items-center">
+            <i class="fas ${getNotificationIcon(type)} mr-2"></i>
+            <span>${message}</span>
+            <button onclick="this.parentElement.parentElement.remove()" class="ml-4 text-lg">&times;</button>
+        </div>
+    `;
+    
+    document.body.appendChild(notification);
+    
+    setTimeout(() => {
+        if (notification.parentElement) {
+            notification.remove();
+        }
+    }, 5000);
+}
+
+// Fonction pour obtenir les classes CSS des notifications
+function getNotificationClass(type) {
+    switch(type) {
+        case 'success':
+            return 'bg-green-100 border border-green-400 text-green-700';
+        case 'error':
+            return 'bg-red-100 border border-red-400 text-red-700';
+        case 'warning':
+            return 'bg-yellow-100 border border-yellow-400 text-yellow-700';
+        default:
+            return 'bg-blue-100 border border-blue-400 text-blue-700';
+    }
+}
+
+// Fonction pour obtenir les icônes des notifications
+function getNotificationIcon(type) {
+    switch(type) {
+        case 'success':
+            return 'fa-check-circle';
+        case 'error':
+            return 'fa-exclamation-circle';
+        case 'warning':
+            return 'fa-exclamation-triangle';
+        default:
+            return 'fa-info-circle';
+    }
+}
+
+// Fonction de validation du formulaire
+function validateForm(formId) {
+    const form = document.getElementById(formId);
+    const requiredFields = form.querySelectorAll('[required]');
+    let isValid = true;
+    
+    requiredFields.forEach(field => {
+        if (!field.value.trim()) {
+            field.classList.add('border-red-500');
+            isValid = false;
+        } else {
+            field.classList.remove('border-red-500');
+        }
+    });
+    
+    return isValid;
+}
+</script>
+{% endblock %}

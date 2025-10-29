@@ -1,0 +1,461 @@
+{% extends 'base/base.html' %}
+{% load static %}
+
+{% block title %}Carte des signalements - AidConnect{% endblock %}
+
+{% block extra_css %}
+<style>
+    .map-container {
+        position: relative;
+        height: 600px;
+        border-radius: 8px;
+        overflow: hidden;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    }
+    
+    .map-controls {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        z-index: 1000;
+        background: white;
+        padding: 10px;
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+    
+    .legend {
+        position: absolute;
+        bottom: 10px;
+        left: 10px;
+        z-index: 1000;
+        background: white;
+        padding: 15px;
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        min-width: 200px;
+    }
+    
+    .legend-item {
+        display: flex;
+        align-items: center;
+        margin-bottom: 8px;
+    }
+    
+    .legend-color {
+        width: 20px;
+        height: 20px;
+        border-radius: 50%;
+        margin-right: 10px;
+    }
+    
+    .stats-panel {
+        background: white;
+        border-radius: 8px;
+        padding: 20px;
+        margin-bottom: 20px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+    
+    .stat-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 10px 0;
+        border-bottom: 1px solid #e5e7eb;
+    }
+    
+    .stat-item:last-child {
+        border-bottom: none;
+    }
+    
+    .stat-label {
+        font-weight: 500;
+        color: #374151;
+    }
+    
+    .stat-value {
+        font-weight: bold;
+        color: #1f2937;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <!-- En-tête -->
+    <div class="text-center mb-8">
+        <h1 class="text-3xl font-bold text-gray-900 mb-4">
+            <i class="fas fa-map text-blue-600 mr-3"></i>
+            Carte des signalements
+        </h1>
+        <p class="text-lg text-gray-600">
+            Visualisez en temps réel les signalements de malades mentaux au Sénégal
+        </p>
+    </div>
+
+    <!-- Statistiques -->
+    <div class="stats-panel">
+        <h2 class="text-xl font-semibold text-gray-900 mb-4">
+            <i class="fas fa-chart-bar mr-2"></i>Statistiques en temps réel
+        </h2>
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+            <div class="stat-item">
+                <span class="stat-label">Total signalements</span>
+                <span class="stat-value text-blue-600" id="total-signalements">-</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-label">Cas urgents</span>
+                <span class="stat-value text-red-600" id="cas-urgents">-</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-label">En cours</span>
+                <span class="stat-value text-yellow-600" id="en-cours">-</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-label">Résolus</span>
+                <span class="stat-value text-green-600" id="resolus">-</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Filtres -->
+    <div class="bg-white rounded-lg shadow-md p-6 mb-6">
+        <h3 class="text-lg font-semibold text-gray-900 mb-4">
+            <i class="fas fa-filter mr-2"></i>Filtres
+        </h3>
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Statut</label>
+                <select id="filter-statut" class="form-control">
+                    <option value="">Tous les statuts</option>
+                    <option value="nouveau">Nouveau</option>
+                    <option value="en_cours">En cours</option>
+                    <option value="pris_en_charge">Pris en charge</option>
+                    <option value="resolu">Résolu</option>
+                    <option value="ferme">Fermé</option>
+                </select>
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Urgence</label>
+                <select id="filter-urgence" class="form-control">
+                    <option value="">Tous les niveaux</option>
+                    <option value="critique">Critique</option>
+                    <option value="elevee">Élevée</option>
+                    <option value="moyenne">Moyenne</option>
+                    <option value="faible">Faible</option>
+                </select>
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Zone</label>
+                <select id="filter-zone" class="form-control">
+                    <option value="">Toutes les zones</option>
+                    <option value="dakar">Dakar</option>
+                    <option value="thies">Thiès</option>
+                    <option value="kaolack">Kaolack</option>
+                    <option value="saint_louis">Saint-Louis</option>
+                    <option value="ziguinchor">Ziguinchor</option>
+                </select>
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Actions</label>
+                <div class="flex space-x-2">
+                    <button id="btn-apply-filters" class="btn btn-primary flex-1">
+                        <i class="fas fa-search mr-1"></i>Filtrer
+                    </button>
+                    <button id="btn-reset-filters" class="btn btn-secondary">
+                        <i class="fas fa-undo mr-1"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Carte -->
+    <div class="card">
+        <div class="card-body p-0">
+            <div class="map-container">
+                <div id="map"></div>
+                
+                <!-- Contrôles de la carte -->
+                <div class="map-controls">
+                    <button id="btn-center-dakar" class="btn btn-secondary btn-sm mb-2 w-full">
+                        <i class="fas fa-crosshairs mr-1"></i>Centrer sur Dakar
+                    </button>
+                    <button id="btn-refresh" class="btn btn-primary btn-sm w-full">
+                        <i class="fas fa-sync-alt mr-1"></i>Actualiser
+                    </button>
+                </div>
+                
+                <!-- Légende -->
+                <div class="legend">
+                    <h4 class="font-semibold text-gray-900 mb-3">Légende</h4>
+                    
+                    <h5 class="text-sm font-medium text-gray-700 mb-2">Statuts</h5>
+                    <div class="legend-item">
+                        <div class="legend-color bg-red-500"></div>
+                        <span class="text-sm">Nouveau</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color bg-yellow-500"></div>
+                        <span class="text-sm">En cours</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color bg-blue-500"></div>
+                        <span class="text-sm">Pris en charge</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color bg-green-500"></div>
+                        <span class="text-sm">Résolu</span>
+                    </div>
+                    
+                    <h5 class="text-sm font-medium text-gray-700 mb-2 mt-4">Urgence</h5>
+                    <div class="legend-item">
+                        <div class="legend-color bg-red-600"></div>
+                        <span class="text-sm">Critique</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color bg-orange-500"></div>
+                        <span class="text-sm">Élevée</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color bg-yellow-500"></div>
+                        <span class="text-sm">Moyenne</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color bg-green-500"></div>
+                        <span class="text-sm">Faible</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Liste des signalements -->
+    <div class="mt-8">
+        <div class="flex justify-between items-center mb-6">
+            <h2 class="text-2xl font-bold text-gray-900">
+                <i class="fas fa-list mr-2"></i>Signalements récents
+            </h2>
+            <a href="{% url 'signalements:liste' %}" class="text-blue-600 hover:text-blue-800 font-medium">
+                Voir tous <i class="fas fa-arrow-right ml-1"></i>
+            </a>
+        </div>
+        
+        <div id="signalements-list" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <!-- Les signalements seront chargés ici via JavaScript -->
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+let map;
+let signalements = [];
+let markers = [];
+
+document.addEventListener('DOMContentLoaded', function() {
+    // Initialiser la carte
+    initMap();
+    
+    // Charger les signalements
+    loadSignalements();
+    
+    // Événements des filtres
+    document.getElementById('btn-apply-filters').addEventListener('click', applyFilters);
+    document.getElementById('btn-reset-filters').addEventListener('click', resetFilters);
+    document.getElementById('btn-center-dakar').addEventListener('click', centerOnDakar);
+    document.getElementById('btn-refresh').addEventListener('click', loadSignalements);
+});
+
+function initMap() {
+    // Initialiser la carte centrée sur Dakar
+    map = L.map('map').setView([14.6928, -17.4467], 13);
+    
+    // Ajouter la couche de tuiles
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '© OpenStreetMap contributors'
+    }).addTo(map);
+}
+
+async function loadSignalements() {
+    try {
+        showLoading(document.getElementById('signalements-list'));
+        
+        const response = await fetch('/api/signalements/');
+        signalements = await response.json();
+        
+        // Mettre à jour les statistiques
+        updateStatistics();
+        
+        // Afficher les marqueurs
+        displayMarkers();
+        
+        // Afficher la liste
+        displaySignalementsList();
+        
+    } catch (error) {
+        console.error('Erreur lors du chargement des signalements:', error);
+        showNotification('Erreur lors du chargement des signalements', 'error');
+    }
+}
+
+function updateStatistics() {
+    const total = signalements.length;
+    const urgents = signalements.filter(s => s.urgence === 'critique').length;
+    const enCours = signalements.filter(s => s.statut === 'en_cours').length;
+    const resolus = signalements.filter(s => s.statut === 'resolu').length;
+    
+    document.getElementById('total-signalements').textContent = total;
+    document.getElementById('cas-urgents').textContent = urgents;
+    document.getElementById('en-cours').textContent = enCours;
+    document.getElementById('resolus').textContent = resolus;
+}
+
+function displayMarkers() {
+    // Supprimer les marqueurs existants
+    markers.forEach(marker => map.removeLayer(marker));
+    markers = [];
+    
+    // Ajouter les nouveaux marqueurs
+    signalements.forEach(signalement => {
+        if (signalement.lat && signalement.lng) {
+            const marker = createMarker(signalement);
+            marker.addTo(map);
+            markers.push(marker);
+        }
+    });
+    
+    // Ajuster la vue pour inclure tous les marqueurs
+    if (markers.length > 0) {
+        const group = new L.featureGroup(markers);
+        map.fitBounds(group.getBounds().pad(0.1));
+    }
+}
+
+function createMarker(signalement) {
+    // Couleur selon le statut
+    const statusColors = {
+        'nouveau': 'red',
+        'en_cours': 'yellow',
+        'pris_en_charge': 'blue',
+        'resolu': 'green',
+        'ferme': 'gray'
+    };
+    
+    // Taille selon l'urgence
+    const urgencySizes = {
+        'critique': 15,
+        'elevee': 12,
+        'moyenne': 10,
+        'faible': 8
+    };
+    
+    const color = statusColors[signalement.statut] || 'gray';
+    const size = urgencySizes[signalement.urgence] || 10;
+    
+    const marker = L.circleMarker([signalement.lat, signalement.lng], {
+        radius: size,
+        fillColor: color,
+        color: '#000',
+        weight: 1,
+        opacity: 1,
+        fillOpacity: 0.8
+    });
+    
+    // Popup avec informations
+    const popupContent = `
+        <div class="p-2 min-w-64">
+            <h3 class="font-semibold text-sm mb-2">${signalement.lieu}</h3>
+            <p class="text-xs text-gray-600 mb-3">${signalement.description}</p>
+            <div class="flex flex-wrap gap-1 mb-2">
+                <span class="badge status-${signalement.statut} text-xs">
+                    ${signalement.statut.replace('_', ' ')}
+                </span>
+                <span class="badge urgence-${signalement.urgence} text-xs">
+                    ${signalement.urgence}
+                </span>
+            </div>
+            <p class="text-xs text-gray-500">${formatDate(signalement.date)}</p>
+        </div>
+    `;
+    
+    marker.bindPopup(popupContent);
+    
+    return marker;
+}
+
+function displaySignalementsList() {
+    const container = document.getElementById('signalements-list');
+    const filteredSignalements = getFilteredSignalements();
+    
+    if (filteredSignalements.length === 0) {
+        container.innerHTML = `
+            <div class="col-span-full text-center py-12">
+                <i class="fas fa-inbox text-6xl text-gray-300 mb-4"></i>
+                <p class="text-gray-500 text-lg">Aucun signalement trouvé</p>
+            </div>
+        `;
+        return;
+    }
+    
+    container.innerHTML = filteredSignalements.slice(0, 6).map(signalement => `
+        <div class="signalement-card ${signalement.statut}">
+            <div class="card-body">
+                <div class="flex justify-between items-start mb-3">
+                    <h3 class="font-semibold text-gray-900">${signalement.lieu}</h3>
+                    <span class="badge status-${signalement.statut}">
+                        ${signalement.statut.replace('_', ' ')}
+                    </span>
+                </div>
+                <p class="text-gray-600 text-sm mb-3 line-clamp-3">
+                    ${signalement.description}
+                </p>
+                <div class="flex justify-between items-center">
+                    <span class="badge urgence-${signalement.urgence}">
+                        ${signalement.urgence}
+                    </span>
+                    <span class="text-xs text-gray-500">
+                        ${formatDate(signalement.date)}
+                    </span>
+                </div>
+            </div>
+        </div>
+    `).join('');
+}
+
+function getFilteredSignalements() {
+    const statut = document.getElementById('filter-statut').value;
+    const urgence = document.getElementById('filter-urgence').value;
+    const zone = document.getElementById('filter-zone').value;
+    
+    return signalements.filter(signalement => {
+        if (statut && signalement.statut !== statut) return false;
+        if (urgence && signalement.urgence !== urgence) return false;
+        if (zone && !signalement.lieu.toLowerCase().includes(zone.toLowerCase())) return false;
+        return true;
+    });
+}
+
+function applyFilters() {
+    displayMarkers();
+    displaySignalementsList();
+}
+
+function resetFilters() {
+    document.getElementById('filter-statut').value = '';
+    document.getElementById('filter-urgence').value = '';
+    document.getElementById('filter-zone').value = '';
+    applyFilters();
+}
+
+function centerOnDakar() {
+    map.setView([14.6928, -17.4467], 13);
+}
+
+function showLoading(element) {
+    element.innerHTML = '<div class="col-span-full flex justify-center items-center py-12"><i class="fas fa-spinner fa-spin text-4xl text-blue-600"></i></div>';
+}
+</script>
+{% endblock %}

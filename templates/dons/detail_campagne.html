@@ -1,0 +1,143 @@
+{% extends 'base/base.html' %}
+{% load static %}
+
+{% block title %}{{ campagne.titre }} - AidConnect{% endblock %}
+
+{% block content %}
+<div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <!-- En-tête -->
+    <div class="text-center mb-8">
+        <h1 class="text-3xl font-bold text-gray-900 mb-4">
+            <i class="fas fa-bullhorn text-purple-600 mr-3"></i>
+            {{ campagne.titre }}
+        </h1>
+        <p class="text-lg text-gray-600">
+            Campagne de collecte de {{ campagne.association.nom }}
+        </p>
+    </div>
+
+    <!-- Contenu principal -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <!-- Informations de la campagne -->
+        <div class="lg:col-span-2">
+            <div class="card">
+                {% if campagne.image %}
+                    <img src="{{ campagne.image.url }}" alt="{{ campagne.titre }}" class="w-full h-64 object-cover rounded-t-lg">
+                {% endif %}
+                <div class="card-body">
+                    <h2 class="text-2xl font-semibold text-gray-900 mb-4">
+                        <i class="fas fa-info-circle mr-2"></i>Description de la campagne
+                    </h2>
+                    <div class="prose max-w-none">
+                        {{ campagne.description|linebreaks }}
+                    </div>
+                    
+                    <!-- Informations de l'association -->
+                    <div class="mt-6 p-4 bg-gray-50 rounded-lg">
+                        <h3 class="font-semibold text-gray-900 mb-2">
+                            <i class="fas fa-building mr-2"></i>Association organisatrice
+                        </h3>
+                        <div class="flex items-center">
+                            {% if campagne.association.logo %}
+                                <img src="{{ campagne.association.logo.url }}" alt="{{ campagne.association.nom }}" class="w-12 h-12 rounded-full mr-3">
+                            {% endif %}
+                            <div>
+                                <h4 class="font-semibold text-gray-900">{{ campagne.association.nom }}</h4>
+                                <p class="text-sm text-gray-600">{{ campagne.association.zone_intervention }}</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Panneau de don -->
+        <div class="lg:col-span-1">
+            <div class="card sticky top-8">
+                <div class="card-header">
+                    <h3 class="text-xl font-semibold text-gray-900">
+                        <i class="fas fa-gift mr-2"></i>Faire un don
+                    </h3>
+                </div>
+                <div class="card-body">
+                    <!-- Barre de progression -->
+                    <div class="mb-6">
+                        <div class="flex justify-between text-sm text-gray-600 mb-2">
+                            <span>Collecté</span>
+                            <span>{{ campagne.montant_collecte|floatformat:0 }} / {{ campagne.objectif_montant|floatformat:0 }} FCFA</span>
+                        </div>
+                        <div class="w-full bg-gray-200 rounded-full h-3">
+                            <div class="bg-green-600 h-3 rounded-full transition-all duration-500" style="width: {{ campagne.pourcentage_collecte }}%"></div>
+                        </div>
+                        <div class="text-center text-sm text-gray-500 mt-2">
+                            {{ campagne.pourcentage_collecte|floatformat:1 }}% atteint
+                        </div>
+                    </div>
+
+                    <!-- Informations de la campagne -->
+                    <div class="space-y-3 mb-6">
+                        <div class="flex justify-between">
+                            <span class="text-gray-600">Objectif :</span>
+                            <span class="font-semibold">{{ campagne.objectif_montant|floatformat:0 }} FCFA</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-gray-600">Collecté :</span>
+                            <span class="font-semibold text-green-600">{{ campagne.montant_collecte|floatformat:0 }} FCFA</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-gray-600">Restant :</span>
+                            <span class="font-semibold">{{ campagne.montant_restant|floatformat:0 }} FCFA</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-gray-600">Fin :</span>
+                            <span class="font-semibold">{{ campagne.date_fin|date:"d/m/Y" }}</span>
+                        </div>
+                    </div>
+
+                    <!-- Boutons d'action -->
+                    <div class="space-y-3">
+                        <a href="{% url 'dons:faire_don' %}?campagne={{ campagne.id }}" class="btn btn-primary w-full">
+                            <i class="fas fa-gift mr-2"></i>Faire un don
+                        </a>
+                        <a href="{% url 'dons:campagnes_dons' %}" class="btn btn-secondary w-full">
+                            <i class="fas fa-arrow-left mr-2"></i>Retour aux campagnes
+                        </a>
+                    </div>
+
+                    <!-- Statut -->
+                    <div class="mt-4 text-center">
+                        <span class="badge status-{{ campagne.statut }}">
+                            {{ campagne.get_statut_display }}
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Dons récents -->
+    {% if dons_recents %}
+        <div class="mt-8">
+            <h3 class="text-xl font-semibold text-gray-900 mb-4">
+                <i class="fas fa-history mr-2"></i>Dons récents
+            </h3>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {% for don in dons_recents %}
+                    <div class="card">
+                        <div class="card-body">
+                            <div class="flex items-center justify-between mb-2">
+                                <span class="font-semibold text-green-600">{{ don.montant|floatformat:0 }} FCFA</span>
+                                <span class="text-sm text-gray-500">{{ don.date|date:"d/m/Y" }}</span>
+                            </div>
+                            <p class="text-sm text-gray-600">{{ don.type_don|title }}</p>
+                            {% if don.description %}
+                                <p class="text-xs text-gray-500 mt-1">{{ don.description|truncatewords:10 }}</p>
+                            {% endif %}
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

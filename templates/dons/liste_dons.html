@@ -1,0 +1,192 @@
+{% extends 'base/base.html' %}
+{% load static %}
+
+{% block title %}Dons - AidConnect{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <!-- En-tête -->
+    <div class="text-center mb-8">
+        <h1 class="text-3xl font-bold text-gray-900 mb-4">
+            <i class="fas fa-hand-holding-heart text-green-600 mr-3"></i>
+            Dons et contributions
+        </h1>
+        <p class="text-lg text-gray-600">
+            Découvrez comment vous pouvez aider les associations
+        </p>
+    </div>
+
+    <!-- Actions rapides -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+        <div class="card text-center p-6">
+            <div class="text-green-600 text-4xl mb-4">
+                <i class="fas fa-gift"></i>
+            </div>
+            <h3 class="text-xl font-semibold mb-2">Faire un don</h3>
+            <p class="text-gray-600 mb-4">Soutenez les associations avec vos dons</p>
+            <a href="{% url 'dons:faire_don' %}" class="btn btn-success">
+                <i class="fas fa-plus mr-2"></i>Faire un don
+            </a>
+        </div>
+
+        <div class="card text-center p-6">
+            <div class="text-blue-600 text-4xl mb-4">
+                <i class="fas fa-bullhorn"></i>
+            </div>
+            <h3 class="text-xl font-semibold mb-2">Campagnes</h3>
+            <p class="text-gray-600 mb-4">Participez aux campagnes de collecte</p>
+            <a href="{% url 'dons:campagnes' %}" class="btn btn-primary">
+                <i class="fas fa-arrow-right mr-2"></i>Voir les campagnes
+            </a>
+        </div>
+
+        <div class="card text-center p-6">
+            <div class="text-purple-600 text-4xl mb-4">
+                <i class="fas fa-chart-line"></i>
+            </div>
+            <h3 class="text-xl font-semibold mb-2">Statistiques</h3>
+            <p class="text-gray-600 mb-4">Consultez l'impact de vos dons</p>
+            <a href="{% url 'dons:statistiques' %}" class="btn btn-warning">
+                <i class="fas fa-chart-bar mr-2"></i>Voir les stats
+            </a>
+        </div>
+    </div>
+
+    <!-- Filtres -->
+    <div class="bg-white rounded-lg shadow-md p-6 mb-6">
+        <h3 class="text-lg font-semibold text-gray-900 mb-4">
+            <i class="fas fa-filter mr-2"></i>Filtres
+        </h3>
+        <form method="get" class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Type de don</label>
+                <select name="type" class="form-control">
+                    <option value="">Tous les types</option>
+                    <option value="argent" {% if type_don == 'argent' %}selected{% endif %}>Argent</option>
+                    <option value="medicament" {% if type_don == 'medicament' %}selected{% endif %}>Médicament</option>
+                    <option value="vetement" {% if type_don == 'vetement' %}selected{% endif %}>Vêtement</option>
+                    <option value="nourriture" {% if type_don == 'nourriture' %}selected{% endif %}>Nourriture</option>
+                    <option value="autre" {% if type_don == 'autre' %}selected{% endif %}>Autre</option>
+                </select>
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Association</label>
+                <select name="association" class="form-control">
+                    <option value="">Toutes les associations</option>
+                    <!-- Les options seront remplies via JavaScript -->
+                </select>
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Actions</label>
+                <div class="flex space-x-2">
+                    <button type="submit" class="btn btn-primary flex-1">
+                        <i class="fas fa-search mr-2"></i>Filtrer
+                    </button>
+                    <a href="{% url 'dons:liste' %}" class="btn btn-secondary">
+                        <i class="fas fa-undo mr-1"></i>
+                    </a>
+                </div>
+            </div>
+        </form>
+    </div>
+
+    <!-- Liste des dons -->
+    {% if page_obj %}
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+            {% for don in page_obj %}
+                <div class="don-card">
+                    <div class="card-body">
+                        <div class="flex justify-between items-start mb-3">
+                            <h3 class="font-semibold text-gray-900">{{ don.get_type_don_display }}</h3>
+                            <span class="badge status-{{ don.statut }}">
+                                {{ don.get_statut_display }}
+                            </span>
+                        </div>
+                        
+                        <p class="text-gray-600 text-sm mb-3 line-clamp-3">
+                            {{ don.description|truncatewords:15 }}
+                        </p>
+                        
+                        {% if don.montant %}
+                            <div class="text-lg font-semibold text-green-600 mb-2">
+                                {{ don.montant|floatformat:0 }} FCFA
+                            </div>
+                        {% endif %}
+                        
+                        {% if don.quantite %}
+                            <div class="text-sm text-gray-600 mb-2">
+                                <i class="fas fa-box mr-1"></i>
+                                {{ don.quantite }}
+                            </div>
+                        {% endif %}
+                        
+                        <div class="space-y-1 mb-3">
+                            <div class="flex items-center text-sm text-gray-600">
+                                <i class="fas fa-user mr-2"></i>
+                                {{ don.donateur.get_full_name|default:don.donateur.username }}
+                            </div>
+                            {% if don.association %}
+                                <div class="flex items-center text-sm text-gray-600">
+                                    <i class="fas fa-building mr-2"></i>
+                                    {{ don.association.nom }}
+                                </div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="text-xs text-gray-500">
+                            <i class="fas fa-clock mr-1"></i>
+                            {{ don.date|date:"d/m/Y H:i" }}
+                        </div>
+                    </div>
+                    <div class="card-footer">
+                        <a href="{% url 'dons:detail' don.pk %}" class="btn btn-outline btn-sm w-full">
+                            <i class="fas fa-eye mr-1"></i>Voir détails
+                        </a>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+
+        <!-- Pagination -->
+        {% if page_obj.has_other_pages %}
+            <div class="flex justify-center">
+                <nav class="pagination">
+                    {% if page_obj.has_previous %}
+                        <a href="?page=1{% if type_don %}&type={{ type_don }}{% endif %}{% if association_id %}&association={{ association_id }}{% endif %}" class="pagination-link">
+                            <i class="fas fa-angle-double-left"></i>
+                        </a>
+                        <a href="?page={{ page_obj.previous_page_number }}{% if type_don %}&type={{ type_don }}{% endif %}{% if association_id %}&association={{ association_id }}{% endif %}" class="pagination-link">
+                            <i class="fas fa-angle-left"></i>
+                        </a>
+                    {% endif %}
+
+                    {% for num in page_obj.paginator.page_range %}
+                        {% if page_obj.number == num %}
+                            <span class="pagination-current">{{ num }}</span>
+                        {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                            <a href="?page={{ num }}{% if type_don %}&type={{ type_don }}{% endif %}{% if association_id %}&association={{ association_id }}{% endif %}" class="pagination-link">{{ num }}</a>
+                        {% endif %}
+                    {% endfor %}
+
+                    {% if page_obj.has_next %}
+                        <a href="?page={{ page_obj.next_page_number }}{% if type_don %}&type={{ type_don }}{% endif %}{% if association_id %}&association={{ association_id }}{% endif %}" class="pagination-link">
+                            <i class="fas fa-angle-right"></i>
+                        </a>
+                        <a href="?page={{ page_obj.paginator.num_pages }}{% if type_don %}&type={{ type_don }}{% endif %}{% if association_id %}&association={{ association_id }}{% endif %}" class="pagination-link">
+                            <i class="fas fa-angle-double-right"></i>
+                        </a>
+                    {% endif %}
+                </nav>
+            </div>
+        {% endif %}
+    {% else %}
+        <div class="text-center py-12">
+            <i class="fas fa-gift text-6xl text-gray-300 mb-4"></i>
+            <p class="text-gray-500 text-lg mb-4">Aucun don trouvé</p>
+            <a href="{% url 'dons:faire_don' %}" class="btn btn-primary">
+                <i class="fas fa-plus mr-2"></i>Faire le premier don
+            </a>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

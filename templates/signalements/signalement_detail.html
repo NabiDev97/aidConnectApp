@@ -1,0 +1,379 @@
+{% extends 'base/base.html' %}
+{% load static %}
+
+{% block title %}Détail du signalement - AidConnect{% endblock %}
+
+{% block extra_css %}
+<style>
+    #map {
+        height: 300px;
+        width: 100%;
+        border-radius: 8px;
+        border: 1px solid #e5e7eb;
+    }
+    
+    .signalement-image {
+        max-height: 400px;
+        object-fit: cover;
+        border-radius: 8px;
+    }
+    
+    .intervention-card {
+        border-left: 4px solid #3b82f6;
+        background: #f8fafc;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <!-- En-tête -->
+    <div class="flex justify-between items-start mb-8">
+        <div>
+            <h1 class="text-3xl font-bold text-gray-900 mb-2">
+                <i class="fas fa-exclamation-triangle text-red-600 mr-3"></i>
+                Signalement #{{ signalement.id }}
+            </h1>
+            <p class="text-lg text-gray-600">{{ signalement.lieu }}</p>
+        </div>
+        <div class="flex space-x-2">
+            <span class="badge status-{{ signalement.statut }}">
+                {{ signalement.get_statut_display }}
+            </span>
+            <span class="badge urgence-{{ signalement.niveau_urgence }}">
+                {{ signalement.get_niveau_urgence_display }}
+            </span>
+        </div>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <!-- Informations principales -->
+        <div class="lg:col-span-2 space-y-6">
+            <!-- Description -->
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="text-xl font-semibold text-gray-900">
+                        <i class="fas fa-align-left mr-2"></i>Description
+                    </h2>
+                </div>
+                <div class="card-body">
+                    <p class="text-gray-700 leading-relaxed">{{ signalement.description }}</p>
+                </div>
+            </div>
+
+            <!-- Photo -->
+            {% if signalement.photo %}
+                <div class="card">
+                    <div class="card-header">
+                        <h2 class="text-xl font-semibold text-gray-900">
+                            <i class="fas fa-camera mr-2"></i>Photo
+                        </h2>
+                    </div>
+                    <div class="card-body">
+                        <img src="{{ signalement.photo.url }}" alt="Photo du signalement" class="signalement-image w-full">
+                    </div>
+                </div>
+            {% endif %}
+
+            <!-- Localisation -->
+            {% if signalement.latitude and signalement.longitude %}
+                <div class="card">
+                    <div class="card-header">
+                        <h2 class="text-xl font-semibold text-gray-900">
+                            <i class="fas fa-map mr-2"></i>Localisation
+                        </h2>
+                    </div>
+                    <div class="card-body">
+                        <div id="map"></div>
+                        <div class="mt-4 grid grid-cols-2 gap-4 text-sm">
+                            <div>
+                                <span class="font-medium text-gray-600">Latitude :</span>
+                                <span class="text-gray-900">{{ signalement.latitude }}</span>
+                            </div>
+                            <div>
+                                <span class="font-medium text-gray-600">Longitude :</span>
+                                <span class="text-gray-900">{{ signalement.longitude }}</span>
+                            </div>
+                        </div>
+                        
+                        <!-- Lien vers Google Maps -->
+                        <div class="mt-4">
+                            <a href="https://www.google.com/maps?q={{ signalement.latitude }},{{ signalement.longitude }}&z=15&t=m" 
+                               target="_blank" 
+                               class="btn btn-primary btn-sm">
+                                <i class="fas fa-external-link-alt mr-2"></i>
+                                Voir sur Google Maps
+                            </a>
+                            <button onclick="copyCoordinates('{{ signalement.latitude }}', '{{ signalement.longitude }}')" class="ml-2 btn btn-secondary btn-sm">
+                                <i class="fas fa-copy mr-2"></i>
+                                Copier les coordonnées
+                            </button>
+                        </div>
+                        {% if signalement.adresse_complete %}
+                            <div class="mt-2">
+                                <span class="font-medium text-gray-600">Adresse :</span>
+                                <span class="text-gray-900">{{ signalement.adresse_complete }}</span>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+            {% endif %}
+
+            <!-- Interventions -->
+            {% if interventions %}
+                <div class="card">
+                    <div class="card-header">
+                        <h2 class="text-xl font-semibold text-gray-900">
+                            <i class="fas fa-hands-helping mr-2"></i>Interventions
+                        </h2>
+                    </div>
+                    <div class="card-body">
+                        <div class="space-y-4">
+                            {% for intervention in interventions %}
+                                <div class="intervention-card p-4 rounded-lg">
+                                    <div class="flex justify-between items-start mb-2">
+                                        <h3 class="font-semibold text-gray-900">{{ intervention.association.nom }}</h3>
+                                        <span class="badge status-{{ intervention.statut_intervention }}">
+                                            {{ intervention.get_statut_intervention_display }}
+                                        </span>
+                                    </div>
+                                    <p class="text-gray-600 text-sm mb-2">{{ intervention.commentaire }}</p>
+                                    <p class="text-xs text-gray-500">
+                                        <i class="fas fa-clock mr-1"></i>
+                                        {{ intervention.date_intervention|date:"d/m/Y H:i" }}
+                                    </p>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+            {% endif %}
+        </div>
+
+        <!-- Informations secondaires -->
+        <div class="space-y-6">
+            <!-- Détails -->
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="text-xl font-semibold text-gray-900">
+                        <i class="fas fa-info-circle mr-2"></i>Détails
+                    </h2>
+                </div>
+                <div class="card-body">
+                    <div class="space-y-3">
+                        <div>
+                            <span class="font-medium text-gray-600">Date :</span>
+                            <span class="text-gray-900">{{ signalement.date_signalement|date:"d/m/Y H:i" }}</span>
+                        </div>
+                        <div>
+                            <span class="font-medium text-gray-600">Lieu :</span>
+                            <span class="text-gray-900">{{ signalement.lieu }}</span>
+                        </div>
+                        {% if signalement.utilisateur %}
+                            <div>
+                                <span class="font-medium text-gray-600">Signalé par :</span>
+                                <span class="text-gray-900">{{ signalement.utilisateur.get_full_name|default:signalement.utilisateur.username }}</span>
+                            </div>
+                        {% endif %}
+                        {% if signalement.contact_telephone %}
+                            <div>
+                                <span class="font-medium text-gray-600">Contact :</span>
+                                <span class="text-gray-900">{{ signalement.contact_telephone }}</span>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Actions -->
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="text-xl font-semibold text-gray-900">
+                        <i class="fas fa-tools mr-2"></i>Actions
+                    </h2>
+                </div>
+                <div class="card-body">
+                    <div class="space-y-3">
+                        <a href="{% url 'signalements:signaler' %}" class="btn btn-primary w-full">
+                            <i class="fas fa-plus mr-2"></i>Nouveau signalement
+                        </a>
+                        <a href="{% url 'signalements:liste' %}" class="btn btn-secondary w-full">
+                            <i class="fas fa-list mr-2"></i>Voir tous les signalements
+                        </a>
+                        <a href="{% url 'signalements:carte' %}" class="btn btn-outline w-full">
+                            <i class="fas fa-map mr-2"></i>Voir sur la carte
+                        </a>
+                        {% if user.is_authenticated and user.association %}
+                            <a href="{% url 'associations:tableau_bord' %}" class="btn btn-success w-full">
+                                <i class="fas fa-hands-helping mr-2"></i>Intervenir
+                            </a>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Statistiques -->
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="text-xl font-semibold text-gray-900">
+                        <i class="fas fa-chart-bar mr-2"></i>Statistiques
+                    </h2>
+                </div>
+                <div class="card-body">
+                    <div class="space-y-3">
+                        <div class="flex justify-between">
+                            <span class="text-gray-600">Interventions :</span>
+                            <span class="font-semibold">{{ interventions.count }}</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-gray-600">Âge du signalement :</span>
+                            <span class="font-semibold">{{ signalement.date_signalement|timesince }}</span>
+                        </div>
+                        {% if signalement.est_ancien %}
+                            <div class="bg-yellow-100 border border-yellow-400 text-yellow-700 px-3 py-2 rounded text-sm">
+                                <i class="fas fa-exclamation-triangle mr-1"></i>
+                                Signalement ancien (> 7 jours)
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<!-- Google Maps API -->
+<script async defer src="https://maps.googleapis.com/maps/api/js?key={{ GOOGLE_MAPS_API_KEY }}&libraries=marker&callback=initMap"></script>
+
+<script>
+let map;
+
+function initMap() {
+    {% if signalement.latitude and signalement.longitude %}
+        const position = { lat: {{ signalement.latitude }}, lng: {{ signalement.longitude }} };
+        
+        map = new google.maps.Map(document.getElementById('map'), {
+            zoom: 15,
+            center: position,
+            mapTypeId: google.maps.MapTypeId.ROADMAP
+        });
+        
+        // Ajouter un marqueur avec AdvancedMarkerElement
+        new google.maps.marker.AdvancedMarkerElement({
+            position: position,
+            map: map,
+            title: '{{ signalement.lieu|escapejs }}'
+        });
+    {% else %}
+        // Carte par défaut centrée sur Dakar
+        const dakar = { lat: 14.6928, lng: -17.4467 };
+        
+        map = new google.maps.Map(document.getElementById('map'), {
+            zoom: 13,
+            center: dakar,
+            mapTypeId: google.maps.MapTypeId.ROADMAP
+        });
+        
+        document.getElementById('map').innerHTML = '<div class="flex items-center justify-center h-full text-gray-500"><i class="fas fa-map-marker-alt mr-2"></i>Position non disponible</div>';
+    {% endif %}
+}
+
+// Fonction pour copier les coordonnées
+function copyCoordinates(lat, lng) {
+    const coordinates = `${lat}, ${lng}`;
+    
+    // Utiliser l'API Clipboard si disponible
+    if (navigator.clipboard && window.isSecureContext) {
+        navigator.clipboard.writeText(coordinates).then(function() {
+            showNotification('Coordonnées copiées dans le presse-papiers !', 'success');
+        }).catch(function(err) {
+            fallbackCopyTextToClipboard(coordinates);
+        });
+    } else {
+        fallbackCopyTextToClipboard(coordinates);
+    }
+}
+
+// Fonction de fallback pour copier le texte
+function fallbackCopyTextToClipboard(text) {
+    const textArea = document.createElement("textarea");
+    textArea.value = text;
+    
+    // Éviter le défilement vers l'élément
+    textArea.style.top = "0";
+    textArea.style.left = "0";
+    textArea.style.position = "fixed";
+    
+    document.body.appendChild(textArea);
+    textArea.focus();
+    textArea.select();
+    
+    try {
+        const successful = document.execCommand('copy');
+        if (successful) {
+            showNotification('Coordonnées copiées dans le presse-papiers !', 'success');
+        } else {
+            showNotification('Impossible de copier les coordonnées', 'error');
+        }
+    } catch (err) {
+        showNotification('Impossible de copier les coordonnées', 'error');
+    }
+    
+    document.body.removeChild(textArea);
+}
+
+// Fonction pour afficher les notifications
+function showNotification(message, type = 'info') {
+    // Créer l'élément de notification
+    const notification = document.createElement('div');
+    notification.className = `fixed top-4 right-4 z-50 p-4 rounded-lg shadow-lg max-w-sm ${getNotificationClass(type)}`;
+    notification.innerHTML = `
+        <div class="flex items-center">
+            <i class="fas ${getNotificationIcon(type)} mr-2"></i>
+            <span>${message}</span>
+            <button onclick="this.parentElement.parentElement.remove()" class="ml-4 text-lg">&times;</button>
+        </div>
+    `;
+    
+    // Ajouter au DOM
+    document.body.appendChild(notification);
+    
+    // Supprimer automatiquement après 3 secondes
+    setTimeout(() => {
+        if (notification.parentElement) {
+            notification.remove();
+        }
+    }, 3000);
+}
+
+// Fonction pour obtenir les classes CSS des notifications
+function getNotificationClass(type) {
+    switch(type) {
+        case 'success':
+            return 'bg-green-100 border border-green-400 text-green-700';
+        case 'error':
+            return 'bg-red-100 border border-red-400 text-red-700';
+        case 'warning':
+            return 'bg-yellow-100 border border-yellow-400 text-yellow-700';
+        default:
+            return 'bg-blue-100 border border-blue-400 text-blue-700';
+    }
+}
+
+// Fonction pour obtenir les icônes des notifications
+function getNotificationIcon(type) {
+    switch(type) {
+        case 'success':
+            return 'fa-check-circle';
+        case 'error':
+            return 'fa-exclamation-circle';
+        case 'warning':
+            return 'fa-exclamation-triangle';
+        default:
+            return 'fa-info-circle';
+    }
+}
+</script>
+{% endblock %}

@@ -1,0 +1,108 @@
+{% extends 'base/base.html' %}
+{% load static %}
+
+{% block title %}Statistiques des dons - AidConnect{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <!-- En-tête -->
+    <div class="text-center mb-8">
+        <h1 class="text-3xl font-bold text-gray-900 mb-4">
+            <i class="fas fa-chart-line text-green-600 mr-3"></i>
+            Statistiques des dons
+        </h1>
+        <p class="text-lg text-gray-600">
+            Consultez l'impact de vos contributions
+        </p>
+    </div>
+
+    <!-- Statistiques générales -->
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+        <div class="stat-card">
+            <div class="stat-number">{{ total_dons }}</div>
+            <div class="stat-label">Total des dons</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-number text-green-600">{{ montant_total|floatformat:0 }} FCFA</div>
+            <div class="stat-label">Montant collecté</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-number text-blue-600">{{ dons_confirmes }}</div>
+            <div class="stat-label">Dons confirmés</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-number text-purple-600">{{ dons_recus }}</div>
+            <div class="stat-label">Dons reçus</div>
+        </div>
+    </div>
+
+    <!-- Graphiques -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+        <!-- Dons par type -->
+        <div class="card">
+            <div class="card-header">
+                <h2 class="text-xl font-semibold text-gray-900">
+                    <i class="fas fa-chart-pie mr-2"></i>Dons par type
+                </h2>
+            </div>
+            <div class="card-body">
+                {% if dons_par_type %}
+                    <div class="space-y-4">
+                        {% for don_type in dons_par_type %}
+                            <div class="flex justify-between items-center">
+                                <span class="text-gray-700">{{ don_type.type_don|title }}</span>
+                                <div class="flex items-center space-x-4">
+                                    <span class="text-sm text-gray-500">{{ don_type.count }} dons</span>
+                                    {% if don_type.montant %}
+                                        <span class="font-semibold text-green-600">{{ don_type.montant|floatformat:0 }} FCFA</span>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <p class="text-gray-500 text-center py-8">Aucune donnée disponible</p>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Top associations -->
+        <div class="card">
+            <div class="card-header">
+                <h2 class="text-xl font-semibold text-gray-900">
+                    <i class="fas fa-trophy mr-2"></i>Top associations
+                </h2>
+            </div>
+            <div class="card-body">
+                {% if top_associations %}
+                    <div class="space-y-4">
+                        {% for association in top_associations %}
+                            <div class="flex justify-between items-center">
+                                <div>
+                                    <h3 class="font-semibold text-gray-900">{{ association.nom }}</h3>
+                                    <p class="text-sm text-gray-600">{{ association.zone_intervention }}</p>
+                                </div>
+                                <div class="text-right">
+                                    <div class="font-semibold text-blue-600">{{ association.nombre_dons }} dons</div>
+                                    {% if association.montant_total %}
+                                        <div class="text-sm text-green-600">{{ association.montant_total|floatformat:0 }} FCFA</div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <p class="text-gray-500 text-center py-8">Aucune donnée disponible</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Actions -->
+    <div class="text-center">
+        <a href="{% url 'dons:faire_don' %}" class="btn btn-primary text-lg px-8 py-3">
+            <i class="fas fa-gift mr-2"></i>Faire un don maintenant
+        </a>
+    </div>
+</div>
+{% endblock %}

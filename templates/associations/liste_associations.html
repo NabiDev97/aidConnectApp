@@ -1,0 +1,176 @@
+{% extends 'base/base.html' %}
+{% load static %}
+
+{% block title %}Associations - AidConnect{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <!-- En-tête -->
+    <div class="text-center mb-8">
+        <h1 class="text-3xl font-bold text-gray-900 mb-4">
+            <i class="fas fa-users text-blue-600 mr-3"></i>
+            Associations partenaires
+        </h1>
+        <p class="text-lg text-gray-600">
+            Découvrez les associations qui interviennent sur le terrain
+        </p>
+    </div>
+
+    <!-- Filtres -->
+    <div class="bg-white rounded-lg shadow-md p-6 mb-6">
+        <h3 class="text-lg font-semibold text-gray-900 mb-4">
+            <i class="fas fa-filter mr-2"></i>Filtres
+        </h3>
+        <form method="get" class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Type d'association</label>
+                <select name="type" class="form-control">
+                    <option value="">Tous les types</option>
+                    <option value="sante_mentale" {% if type_association == 'sante_mentale' %}selected{% endif %}>Santé Mentale</option>
+                    <option value="aide_sociale" {% if type_association == 'aide_sociale' %}selected{% endif %}>Aide Sociale</option>
+                    <option value="urgence" {% if type_association == 'urgence' %}selected{% endif %}>Urgence</option>
+                    <option value="benevoles" {% if type_association == 'benevoles' %}selected{% endif %}>Bénévoles</option>
+                    <option value="autre" {% if type_association == 'autre' %}selected{% endif %}>Autre</option>
+                </select>
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Zone d'intervention</label>
+                <select name="zone" class="form-control">
+                    <option value="">Toutes les zones</option>
+                    <option value="dakar" {% if zone == 'dakar' %}selected{% endif %}>Dakar</option>
+                    <option value="thies" {% if zone == 'thies' %}selected{% endif %}>Thiès</option>
+                    <option value="kaolack" {% if zone == 'kaolack' %}selected{% endif %}>Kaolack</option>
+                    <option value="saint_louis" {% if zone == 'saint_louis' %}selected{% endif %}>Saint-Louis</option>
+                    <option value="ziguinchor" {% if zone == 'ziguinchor' %}selected{% endif %}>Ziguinchor</option>
+                </select>
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Recherche</label>
+                <input type="text" name="recherche" value="{{ recherche }}" placeholder="Nom ou description..." class="form-control">
+            </div>
+            <div class="md:col-span-3 flex space-x-4">
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-search mr-2"></i>Filtrer
+                </button>
+                <a href="{% url 'associations:liste' %}" class="btn btn-secondary">
+                    <i class="fas fa-undo mr-2"></i>Réinitialiser
+                </a>
+            </div>
+        </form>
+    </div>
+
+    <!-- Liste des associations -->
+    {% if page_obj %}
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+            {% for association in page_obj %}
+                <div class="association-card">
+                    <div class="card-body">
+                        <div class="flex items-center mb-4">
+                            {% if association.logo %}
+                                <img src="{{ association.logo.url }}" alt="{{ association.nom }}" class="w-12 h-12 rounded-full object-cover mr-4">
+                            {% else %}
+                                <div class="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center mr-4">
+                                    <i class="fas fa-users text-blue-600"></i>
+                                </div>
+                            {% endif %}
+                            <div>
+                                <h3 class="font-semibold text-gray-900">{{ association.nom }}</h3>
+                                <p class="text-sm text-gray-600">{{ association.get_type_association_display }}</p>
+                            </div>
+                        </div>
+                        
+                        <p class="text-gray-600 text-sm mb-4 line-clamp-3">
+                            {{ association.description|truncatewords:20 }}
+                        </p>
+                        
+                        <div class="space-y-2 mb-4">
+                            <div class="flex items-center text-sm text-gray-600">
+                                <i class="fas fa-map-marker-alt mr-2"></i>
+                                {{ association.get_zone_intervention_display }}
+                            </div>
+                            <div class="flex items-center text-sm text-gray-600">
+                                <i class="fas fa-phone mr-2"></i>
+                                {{ association.contact_telephone }}
+                            </div>
+                            <div class="flex items-center text-sm text-gray-600">
+                                <i class="fas fa-envelope mr-2"></i>
+                                {{ association.contact_email }}
+                            </div>
+                        </div>
+                        
+                        <div class="flex items-center justify-between">
+                            <div class="flex space-x-2">
+                                {% if association.est_verifiee %}
+                                    <span class="badge badge-success">
+                                        <i class="fas fa-check-circle mr-1"></i>Vérifiée
+                                    </span>
+                                {% endif %}
+                                {% if association.est_active %}
+                                    <span class="badge badge-primary">
+                                        <i class="fas fa-circle mr-1"></i>Active
+                                    </span>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-footer">
+                        <a href="{% url 'associations:detail' association.pk %}" class="btn btn-outline btn-sm w-full">
+                            <i class="fas fa-eye mr-1"></i>Voir détails
+                        </a>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+
+        <!-- Pagination -->
+        {% if page_obj.has_other_pages %}
+            <div class="flex justify-center">
+                <nav class="pagination">
+                    {% if page_obj.has_previous %}
+                        <a href="?page=1{% if type_association %}&type={{ type_association }}{% endif %}{% if zone %}&zone={{ zone }}{% endif %}{% if recherche %}&recherche={{ recherche }}{% endif %}" class="pagination-link">
+                            <i class="fas fa-angle-double-left"></i>
+                        </a>
+                        <a href="?page={{ page_obj.previous_page_number }}{% if type_association %}&type={{ type_association }}{% endif %}{% if zone %}&zone={{ zone }}{% endif %}{% if recherche %}&recherche={{ recherche }}{% endif %}" class="pagination-link">
+                            <i class="fas fa-angle-left"></i>
+                        </a>
+                    {% endif %}
+
+                    {% for num in page_obj.paginator.page_range %}
+                        {% if page_obj.number == num %}
+                            <span class="pagination-current">{{ num }}</span>
+                        {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                            <a href="?page={{ num }}{% if type_association %}&type={{ type_association }}{% endif %}{% if zone %}&zone={{ zone }}{% endif %}{% if recherche %}&recherche={{ recherche }}{% endif %}" class="pagination-link">{{ num }}</a>
+                        {% endif %}
+                    {% endfor %}
+
+                    {% if page_obj.has_next %}
+                        <a href="?page={{ page_obj.next_page_number }}{% if type_association %}&type={{ type_association }}{% endif %}{% if zone %}&zone={{ zone }}{% endif %}{% if recherche %}&recherche={{ recherche }}{% endif %}" class="pagination-link">
+                            <i class="fas fa-angle-right"></i>
+                        </a>
+                        <a href="?page={{ page_obj.paginator.num_pages }}{% if type_association %}&type={{ type_association }}{% endif %}{% if zone %}&zone={{ zone }}{% endif %}{% if recherche %}&recherche={{ recherche }}{% endif %}" class="pagination-link">
+                            <i class="fas fa-angle-double-right"></i>
+                        </a>
+                    {% endif %}
+                </nav>
+            </div>
+        {% endif %}
+    {% else %}
+        <div class="text-center py-12">
+            <i class="fas fa-users text-6xl text-gray-300 mb-4"></i>
+            <p class="text-gray-500 text-lg mb-4">Aucune association trouvée</p>
+            <a href="{% url 'associations:register' %}" class="btn btn-primary">
+                <i class="fas fa-plus mr-2"></i>Rejoindre une association
+            </a>
+        </div>
+    {% endif %}
+
+    <!-- Call to Action -->
+    <div class="mt-12 bg-blue-600 text-white rounded-lg p-8 text-center">
+        <h2 class="text-2xl font-bold mb-4">Vous dirigez une association ?</h2>
+        <p class="text-lg mb-6">Rejoignez AidConnect pour intervenir sur les signalements et aider les malades mentaux</p>
+        <a href="{% url 'associations:register' %}" class="btn bg-white text-blue-600 hover:bg-gray-100 text-lg px-8 py-3">
+            <i class="fas fa-user-plus mr-2"></i>Rejoindre maintenant
+        </a>
+    </div>
+</div>
+{% endblock %}

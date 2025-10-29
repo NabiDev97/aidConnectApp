@@ -1,0 +1,117 @@
+{% extends 'base/base.html' %}
+{% load static %}
+
+{% block title %}Campagnes de dons - AidConnect{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <!-- En-tête -->
+    <div class="text-center mb-8">
+        <h1 class="text-3xl font-bold text-gray-900 mb-4">
+            <i class="fas fa-bullhorn text-purple-600 mr-3"></i>
+            Campagnes de dons
+        </h1>
+        <p class="text-lg text-gray-600">
+            Participez aux campagnes de collecte des associations
+        </p>
+    </div>
+
+    <!-- Actions -->
+    <div class="text-center mb-8">
+        <a href="{% url 'dons:faire_don' %}" class="btn btn-primary text-lg px-8 py-3">
+            <i class="fas fa-gift mr-2"></i>Faire un don
+        </a>
+    </div>
+
+    <!-- Liste des campagnes -->
+    {% if page_obj %}
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+            {% for campagne in page_obj %}
+                <div class="card">
+                    {% if campagne.image %}
+                        <img src="{{ campagne.image.url }}" alt="{{ campagne.titre }}" class="w-full h-48 object-cover">
+                    {% endif %}
+                    <div class="card-body">
+                        <h3 class="text-xl font-semibold text-gray-900 mb-2">{{ campagne.titre }}</h3>
+                        <p class="text-gray-600 text-sm mb-4 line-clamp-3">{{ campagne.description|truncatewords:20 }}</p>
+                        
+                        <div class="mb-4">
+                            <div class="flex justify-between text-sm text-gray-600 mb-1">
+                                <span>Collecté</span>
+                                <span>{{ campagne.montant_collecte|floatformat:0 }} / {{ campagne.objectif_montant|floatformat:0 }} FCFA</span>
+                            </div>
+                            <div class="w-full bg-gray-200 rounded-full h-2">
+                                <div class="bg-green-600 h-2 rounded-full" style="width: {{ campagne.pourcentage_collecte }}%"></div>
+                            </div>
+                            <div class="text-xs text-gray-500 mt-1">{{ campagne.pourcentage_collecte|floatformat:1 }}% atteint</div>
+                        </div>
+                        
+                        <div class="space-y-2 mb-4">
+                            <div class="flex items-center text-sm text-gray-600">
+                                <i class="fas fa-building mr-2"></i>
+                                {{ campagne.association.nom }}
+                            </div>
+                            <div class="flex items-center text-sm text-gray-600">
+                                <i class="fas fa-calendar mr-2"></i>
+                                Jusqu'au {{ campagne.date_fin|date:"d/m/Y" }}
+                            </div>
+                        </div>
+                        
+                        <div class="flex space-x-2">
+                            <span class="badge status-{{ campagne.statut }}">
+                                {{ campagne.get_statut_display }}
+                            </span>
+                        </div>
+                    </div>
+                    <div class="card-footer">
+                        <a href="{% url 'dons:campagne_detail' campagne.pk %}" class="btn btn-outline btn-sm w-full">
+                            <i class="fas fa-eye mr-1"></i>Voir détails
+                        </a>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+
+        <!-- Pagination -->
+        {% if page_obj.has_other_pages %}
+            <div class="flex justify-center">
+                <nav class="pagination">
+                    {% if page_obj.has_previous %}
+                        <a href="?page=1" class="pagination-link">
+                            <i class="fas fa-angle-double-left"></i>
+                        </a>
+                        <a href="?page={{ page_obj.previous_page_number }}" class="pagination-link">
+                            <i class="fas fa-angle-left"></i>
+                        </a>
+                    {% endif %}
+
+                    {% for num in page_obj.paginator.page_range %}
+                        {% if page_obj.number == num %}
+                            <span class="pagination-current">{{ num }}</span>
+                        {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                            <a href="?page={{ num }}" class="pagination-link">{{ num }}</a>
+                        {% endif %}
+                    {% endfor %}
+
+                    {% if page_obj.has_next %}
+                        <a href="?page={{ page_obj.next_page_number }}" class="pagination-link">
+                            <i class="fas fa-angle-right"></i>
+                        </a>
+                        <a href="?page={{ page_obj.paginator.num_pages }}" class="pagination-link">
+                            <i class="fas fa-angle-double-right"></i>
+                        </a>
+                    {% endif %}
+                </nav>
+            </div>
+        {% endif %}
+    {% else %}
+        <div class="text-center py-12">
+            <i class="fas fa-bullhorn text-6xl text-gray-300 mb-4"></i>
+            <p class="text-gray-500 text-lg mb-4">Aucune campagne active</p>
+            <a href="{% url 'dons:faire_don' %}" class="btn btn-primary">
+                <i class="fas fa-plus mr-2"></i>Faire un don direct
+            </a>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

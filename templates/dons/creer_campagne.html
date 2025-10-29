@@ -1,0 +1,291 @@
+{% extends 'base/base.html' %}
+{% load crispy_forms_tags %}
+
+{% block title %}Créer une campagne - AidConnect{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <!-- En-tête -->
+    <div class="text-center mb-8">
+        <h1 class="text-3xl font-bold text-gray-900 mb-4">
+            <i class="fas fa-bullhorn text-purple-600 mr-3"></i>
+            Créer une campagne
+        </h1>
+        <p class="text-lg text-gray-600">
+            Lancez une campagne de collecte pour votre association
+        </p>
+    </div>
+
+    <!-- Formulaire -->
+    <div class="card">
+        <div class="card-header">
+            <h2 class="text-xl font-semibold text-gray-900">
+                <i class="fas fa-edit mr-2"></i>Informations de la campagne
+            </h2>
+            <p class="text-sm text-gray-600 mt-1">
+                Tous les champs marqués d'un * sont obligatoires
+            </p>
+        </div>
+        
+        <div class="card-body">
+            <form method="post" enctype="multipart/form-data" id="campagne-form">
+                {% csrf_token %}
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <!-- Titre -->
+                    <div class="md:col-span-2">
+                        <label for="{{ form.titre.id_for_label }}" class="form-label">
+                            <i class="fas fa-heading mr-1"></i>Titre de la campagne *
+                        </label>
+                        {{ form.titre }}
+                        {% if form.titre.errors %}
+                            <div class="invalid-feedback">{{ form.titre.errors.0 }}</div>
+                        {% endif %}
+                        <p class="text-sm text-gray-500 mt-1">
+                            Un titre accrocheur pour attirer les donateurs
+                        </p>
+                    </div>
+
+                    <!-- Objectif montant -->
+                    <div>
+                        <label for="{{ form.objectif_montant.id_for_label }}" class="form-label">
+                            <i class="fas fa-target mr-1"></i>Objectif (FCFA) *
+                        </label>
+                        <div class="relative">
+                            {{ form.objectif_montant }}
+                            <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+                                <span class="text-gray-500 sm:text-sm">FCFA</span>
+                            </div>
+                        </div>
+                        {% if form.objectif_montant.errors %}
+                            <div class="invalid-feedback">{{ form.objectif_montant.errors.0 }}</div>
+                        {% endif %}
+                    </div>
+
+                    <!-- Date de fin -->
+                    <div>
+                        <label for="{{ form.date_fin.id_for_label }}" class="form-label">
+                            <i class="fas fa-calendar mr-1"></i>Date de fin *
+                        </label>
+                        {{ form.date_fin }}
+                        {% if form.date_fin.errors %}
+                            <div class="invalid-feedback">{{ form.date_fin.errors.0 }}</div>
+                        {% endif %}
+                        <p class="text-sm text-gray-500 mt-1">
+                            La campagne se terminera à cette date
+                        </p>
+                    </div>
+
+                    <!-- Image -->
+                    <div class="md:col-span-2">
+                        <label for="{{ form.image.id_for_label }}" class="form-label">
+                            <i class="fas fa-image mr-1"></i>Image de la campagne
+                        </label>
+                        {{ form.image }}
+                        {% if form.image.errors %}
+                            <div class="invalid-feedback">{{ form.image.errors.0 }}</div>
+                        {% endif %}
+                        <p class="text-sm text-gray-500 mt-1">
+                            Une image attractive pour représenter votre campagne
+                        </p>
+                    </div>
+
+                    <!-- Description -->
+                    <div class="md:col-span-2">
+                        <label for="{{ form.description.id_for_label }}" class="form-label">
+                            <i class="fas fa-align-left mr-1"></i>Description de la campagne *
+                        </label>
+                        {{ form.description }}
+                        {% if form.description.errors %}
+                            <div class="invalid-feedback">{{ form.description.errors.0 }}</div>
+                        {% endif %}
+                        <p class="text-sm text-gray-500 mt-1">
+                            Expliquez l'objectif de votre campagne et comment les fonds seront utilisés
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Informations importantes -->
+                <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 mt-6">
+                    <h4 class="font-semibold text-blue-900 mb-2">
+                        <i class="fas fa-info-circle mr-2"></i>Informations importantes
+                    </h4>
+                    <ul class="text-sm text-blue-800 space-y-1">
+                        <li>• Votre campagne sera visible par tous les utilisateurs de la plateforme</li>
+                        <li>• Les dons seront collectés directement pour votre association</li>
+                        <li>• Vous recevrez des notifications pour chaque don reçu</li>
+                        <li>• Vous pouvez modifier les informations de la campagne à tout moment</li>
+                    </ul>
+                </div>
+
+                <!-- Boutons -->
+                <div class="flex flex-col sm:flex-row gap-4 mt-8">
+                    <button type="submit" class="btn btn-primary flex-1">
+                        <i class="fas fa-paper-plane mr-2"></i>Créer la campagne
+                    </button>
+                    <a href="{% url 'dons:campagnes_dons' %}" class="btn btn-secondary flex-1">
+                        <i class="fas fa-arrow-left mr-2"></i>Retour aux campagnes
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Conseils -->
+    <div class="mt-8 grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div class="card">
+            <div class="card-body">
+                <h3 class="text-lg font-semibold text-gray-900 mb-3">
+                    <i class="fas fa-lightbulb text-yellow-600 mr-2"></i>
+                    Conseils pour un bon titre
+                </h3>
+                <ul class="text-sm text-gray-600 space-y-2">
+                    <li>• Soyez précis et descriptif</li>
+                    <li>• Mentionnez l'impact attendu</li>
+                    <li>• Utilisez des mots émotionnels</li>
+                    <li>• Gardez-le court et percutant</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-body">
+                <h3 class="text-lg font-semibold text-gray-900 mb-3">
+                    <i class="fas fa-chart-line text-green-600 mr-2"></i>
+                    Objectif réaliste
+                </h3>
+                <ul class="text-sm text-gray-600 space-y-2">
+                    <li>• Fixez un montant atteignable</li>
+                    <li>• Expliquez comment vous l'utiliserez</li>
+                    <li>• Divisez en étapes si nécessaire</li>
+                    <li>• Montrez l'impact concret</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Validation du formulaire
+    const form = document.getElementById('campagne-form');
+    form.addEventListener('submit', function(e) {
+        if (!validateForm('campagne-form')) {
+            e.preventDefault();
+            showNotification('Veuillez remplir tous les champs obligatoires', 'error');
+        }
+    });
+
+    // Formatage du montant
+    const montantInput = document.getElementById('id_objectif_montant');
+    if (montantInput) {
+        montantInput.addEventListener('input', function(e) {
+            let value = e.target.value.replace(/\D/g, ''); // Supprimer tout sauf les chiffres
+            if (value) {
+                // Ajouter des espaces pour la lisibilité
+                value = parseInt(value).toLocaleString('fr-FR');
+                e.target.value = value;
+            }
+        });
+    }
+
+    // Prévisualisation de l'image
+    const imageInput = document.getElementById('id_image');
+    if (imageInput) {
+        imageInput.addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    // Créer une prévisualisation
+                    let preview = document.getElementById('image-preview');
+                    if (!preview) {
+                        preview = document.createElement('div');
+                        preview.id = 'image-preview';
+                        preview.className = 'mt-2';
+                        imageInput.parentNode.appendChild(preview);
+                    }
+                    preview.innerHTML = `
+                        <img src="${e.target.result}" alt="Aperçu" class="w-32 h-32 object-cover rounded-lg border">
+                        <p class="text-sm text-gray-500 mt-1">Aperçu de l'image</p>
+                    `;
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+    }
+});
+
+// Fonction pour afficher les notifications
+function showNotification(message, type = 'info') {
+    // Créer l'élément de notification
+    const notification = document.createElement('div');
+    notification.className = `fixed top-4 right-4 z-50 p-4 rounded-lg shadow-lg max-w-sm ${getNotificationClass(type)}`;
+    notification.innerHTML = `
+        <div class="flex items-center">
+            <i class="fas ${getNotificationIcon(type)} mr-2"></i>
+            <span>${message}</span>
+            <button onclick="this.parentElement.parentElement.remove()" class="ml-4 text-lg">&times;</button>
+        </div>
+    `;
+    
+    // Ajouter au DOM
+    document.body.appendChild(notification);
+    
+    // Supprimer automatiquement après 5 secondes
+    setTimeout(() => {
+        if (notification.parentElement) {
+            notification.remove();
+        }
+    }, 5000);
+}
+
+// Fonction pour obtenir les classes CSS des notifications
+function getNotificationClass(type) {
+    switch(type) {
+        case 'success':
+            return 'bg-green-100 border border-green-400 text-green-700';
+        case 'error':
+            return 'bg-red-100 border border-red-400 text-red-700';
+        case 'warning':
+            return 'bg-yellow-100 border border-yellow-400 text-yellow-700';
+        default:
+            return 'bg-blue-100 border border-blue-400 text-blue-700';
+    }
+}
+
+// Fonction pour obtenir les icônes des notifications
+function getNotificationIcon(type) {
+    switch(type) {
+        case 'success':
+            return 'fa-check-circle';
+        case 'error':
+            return 'fa-exclamation-circle';
+        case 'warning':
+            return 'fa-exclamation-triangle';
+        default:
+            return 'fa-info-circle';
+    }
+}
+
+// Fonction de validation du formulaire
+function validateForm(formId) {
+    const form = document.getElementById(formId);
+    const requiredFields = form.querySelectorAll('[required]');
+    let isValid = true;
+    
+    requiredFields.forEach(field => {
+        if (!field.value.trim()) {
+            field.classList.add('border-red-500');
+            isValid = false;
+        } else {
+            field.classList.remove('border-red-500');
+        }
+    });
+    
+    return isValid;
+}
+</script>
+{% endblock %}

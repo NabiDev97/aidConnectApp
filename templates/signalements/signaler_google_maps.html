@@ -1,0 +1,437 @@
+{% extends 'base/base.html' %}
+{% load crispy_forms_tags %}
+
+{% block title %}Signaler un cas - AidConnect{% endblock %}
+
+{% block extra_css %}
+<style>
+    #map {
+        height: 400px;
+        width: 100%;
+        border-radius: 8px;
+        border: 1px solid #e5e7eb;
+    }
+    
+    .map-container {
+        position: relative;
+    }
+    
+    .map-controls {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        z-index: 1000;
+        background: white;
+        padding: 10px;
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+    
+    .location-info {
+        background: #f3f4f6;
+        border: 1px solid #d1d5db;
+        border-radius: 6px;
+        padding: 12px;
+        margin-top: 10px;
+    }
+    
+    .location-info h4 {
+        font-weight: 600;
+        color: #374151;
+        margin-bottom: 8px;
+    }
+    
+    .location-info p {
+        font-size: 14px;
+        color: #6b7280;
+        margin: 4px 0;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <!-- En-tête -->
+    <div class="text-center mb-8">
+        <h1 class="text-3xl font-bold text-gray-900 mb-4">
+            <i class="fas fa-exclamation-triangle text-red-600 mr-3"></i>
+            Signaler un cas
+        </h1>
+        <p class="text-lg text-gray-600">
+            Aidez-nous à identifier et aider les malades mentaux dans les rues du Sénégal
+        </p>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        <!-- Formulaire -->
+        <div class="card">
+            <div class="card-header">
+                <h2 class="text-xl font-semibold text-gray-900">
+                    <i class="fas fa-edit mr-2"></i>Informations du signalement
+                </h2>
+                <p class="text-sm text-gray-600 mt-1">
+                    Tous les champs marqués d'un * sont obligatoires
+                </p>
+            </div>
+            
+            <div class="card-body">
+                <form method="post" enctype="multipart/form-data" id="signalement-form">
+                    {% csrf_token %}
+                    
+                    <!-- Lieu -->
+                    <div class="form-group">
+                        <label for="{{ form.lieu.id_for_label }}" class="form-label">
+                            <i class="fas fa-map-marker-alt mr-1"></i>Lieu du signalement *
+                        </label>
+                        {{ form.lieu }}
+                        {% if form.lieu.errors %}
+                            <div class="invalid-feedback">{{ form.lieu.errors.0 }}</div>
+                        {% endif %}
+                    </div>
+
+                    <!-- Description -->
+                    <div class="form-group">
+                        <label for="{{ form.description.id_for_label }}" class="form-label">
+                            <i class="fas fa-align-left mr-1"></i>Description de la situation *
+                        </label>
+                        {{ form.description }}
+                        {% if form.description.errors %}
+                            <div class="invalid-feedback">{{ form.description.errors.0 }}</div>
+                        {% endif %}
+                        <p class="text-sm text-gray-500 mt-1">
+                            Décrivez ce que vous observez : comportement, état de la personne, contexte...
+                        </p>
+                    </div>
+
+                    <!-- Niveau d'urgence -->
+                    <div class="form-group">
+                        <label for="{{ form.niveau_urgence.id_for_label }}" class="form-label">
+                            <i class="fas fa-exclamation-circle mr-1"></i>Niveau d'urgence *
+                        </label>
+                        {{ form.niveau_urgence }}
+                        {% if form.niveau_urgence.errors %}
+                            <div class="invalid-feedback">{{ form.niveau_urgence.errors.0 }}</div>
+                        {% endif %}
+                    </div>
+
+                    <!-- Photo -->
+                    <div class="form-group">
+                        <label for="{{ form.photo.id_for_label }}" class="form-label">
+                            <i class="fas fa-camera mr-1"></i>Photo (optionnelle)
+                        </label>
+                        {{ form.photo }}
+                        {% if form.photo.errors %}
+                            <div class="invalid-feedback">{{ form.photo.errors.0 }}</div>
+                        {% endif %}
+                        <p class="text-sm text-gray-500 mt-1">
+                            Une photo peut aider les associations à mieux comprendre la situation
+                        </p>
+                    </div>
+
+                    <!-- Contact téléphone -->
+                    <div class="form-group">
+                        <label for="{{ form.contact_telephone.id_for_label }}" class="form-label">
+                            <i class="fas fa-phone mr-1"></i>Téléphone de contact (optionnel)
+                        </label>
+                        {{ form.contact_telephone }}
+                        {% if form.contact_telephone.errors %}
+                            <div class="invalid-feedback">{{ form.contact_telephone.errors.0 }}</div>
+                        {% endif %}
+                        <p class="text-sm text-gray-500 mt-1">
+                            Laissez votre numéro si vous souhaitez être contacté par l'association
+                        </p>
+                    </div>
+
+                    <!-- Adresse complète -->
+                    <div class="form-group">
+                        <label for="{{ form.adresse_complete.id_for_label }}" class="form-label">
+                            <i class="fas fa-home mr-1"></i>Adresse complète (optionnelle)
+                        </label>
+                        {{ form.adresse_complete }}
+                        {% if form.adresse_complete.errors %}
+                            <div class="invalid-feedback">{{ form.adresse_complete.errors.0 }}</div>
+                        {% endif %}
+                    </div>
+
+                    <!-- Champs cachés pour les coordonnées -->
+                    <input type="hidden" id="id_latitude" name="latitude" value="">
+                    <input type="hidden" id="id_longitude" name="longitude" value="">
+
+                    <!-- Informations importantes -->
+                    <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 mt-6">
+                        <h4 class="font-semibold text-blue-900 mb-2">
+                            <i class="fas fa-info-circle mr-2"></i>Informations importantes
+                        </h4>
+                        <ul class="text-sm text-blue-800 space-y-1">
+                            <li>• Votre signalement sera transmis aux associations compétentes</li>
+                            <li>• Les informations personnelles sont protégées et confidentielles</li>
+                            <li>• Vous pouvez rester anonyme si vous le souhaitez</li>
+                            <li>• Les associations interviendront dans les plus brefs délais</li>
+                        </ul>
+                    </div>
+
+                    <!-- Boutons -->
+                    <div class="flex flex-col sm:flex-row gap-4 mt-8">
+                        <button type="submit" class="btn btn-primary flex-1">
+                            <i class="fas fa-paper-plane mr-2"></i>Envoyer le signalement
+                        </button>
+                        <a href="{% url 'signalements:home' %}" class="btn btn-secondary flex-1">
+                            <i class="fas fa-arrow-left mr-2"></i>Retour à l'accueil
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Carte Google Maps -->
+        <div class="card">
+            <div class="card-header">
+                <h2 class="text-xl font-semibold text-gray-900">
+                    <i class="fas fa-map mr-2"></i>Localisation
+                </h2>
+                <p class="text-sm text-gray-600 mt-1">
+                    Cliquez sur la carte pour marquer l'emplacement exact
+                </p>
+            </div>
+            
+            <div class="card-body p-0">
+                <div class="map-container">
+                    <div id="map"></div>
+                    
+                    <!-- Contrôles de la carte -->
+                    <div class="map-controls">
+                        <button type="button" id="btn-current-location" class="btn btn-secondary btn-sm mb-2 w-full">
+                            <i class="fas fa-crosshairs mr-1"></i>Ma position
+                        </button>
+                        <button type="button" id="btn-center-dakar" class="btn btn-primary btn-sm w-full">
+                            <i class="fas fa-map-marker-alt mr-1"></i>Centrer Dakar
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Informations de localisation -->
+                <div class="p-4">
+                    <div class="location-info">
+                        <h4>Position sélectionnée :</h4>
+                        <p><strong>Latitude :</strong> <span id="selected-lat">Non sélectionnée</span></p>
+                        <p><strong>Longitude :</strong> <span id="selected-lng">Non sélectionnée</span></p>
+                        <p><strong>Adresse :</strong> <span id="selected-address">Non sélectionnée</span></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Aide -->
+    <div class="mt-8 grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div class="card">
+            <div class="card-body">
+                <h3 class="text-lg font-semibold text-gray-900 mb-3">
+                    <i class="fas fa-question-circle text-blue-600 mr-2"></i>
+                    Que signaler ?
+                </h3>
+                <ul class="text-sm text-gray-600 space-y-2">
+                    <li>• Personnes errant dans les rues</li>
+                    <li>• Comportements inquiétants ou dangereux</li>
+                    <li>• Personnes en détresse psychologique</li>
+                    <li>• Situations nécessitant une intervention médicale</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-body">
+                <h3 class="text-lg font-semibold text-gray-900 mb-3">
+                    <i class="fas fa-phone text-green-600 mr-2"></i>
+                    Urgences
+                </h3>
+                <p class="text-sm text-gray-600 mb-3">
+                    En cas d'urgence immédiate, contactez directement :
+                </p>
+                <div class="space-y-2">
+                    <p class="text-sm font-medium">
+                        <i class="fas fa-phone mr-2"></i>Police : 17
+                    </p>
+                    <p class="text-sm font-medium">
+                        <i class="fas fa-ambulance mr-2"></i>Samu : 15
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<!-- Google Maps API -->
+<script async defer src="https://maps.googleapis.com/maps/api/js?key={{ GOOGLE_MAPS_API_KEY }}&libraries=places,marker&callback=initMap"></script>
+
+<script>
+let map;
+let marker;
+let geocoder;
+
+// Initialiser la carte Google Maps
+function initMap() {
+    // Centrer sur Dakar par défaut
+    const dakar = { lat: 14.6928, lng: -17.4467 };
+    
+    map = new google.maps.Map(document.getElementById('map'), {
+        zoom: 13,
+        center: dakar,
+        mapTypeId: google.maps.MapTypeId.ROADMAP
+    });
+    
+    geocoder = new google.maps.Geocoder();
+    
+    // Créer un marqueur initial avec AdvancedMarkerElement
+    marker = new google.maps.marker.AdvancedMarkerElement({
+        position: dakar,
+        map: map,
+        title: 'Position du signalement',
+        gmpDraggable: true
+    });
+    
+    // Événement de clic sur la carte
+    map.addListener('click', function(event) {
+        const lat = event.latLng.lat();
+        const lng = event.latLng.lng();
+        
+        // Mettre à jour la position du marqueur
+        marker.setPosition(event.latLng);
+        
+        // Mettre à jour les champs cachés
+        document.getElementById('id_latitude').value = lat.toFixed(6);
+        document.getElementById('id_longitude').value = lng.toFixed(6);
+        
+        // Mettre à jour l'affichage
+        updateLocationInfo(lat, lng);
+        
+        // Géocoder pour obtenir l'adresse
+        geocodeLatLng(lat, lng);
+    });
+    
+    // Événement de glissement du marqueur
+    marker.addListener('gmpDragend', function(event) {
+        const lat = event.latLng.lat();
+        const lng = event.latLng.lng();
+        
+        // Mettre à jour les champs cachés
+        document.getElementById('id_latitude').value = lat.toFixed(6);
+        document.getElementById('id_longitude').value = lng.toFixed(6);
+        
+        // Mettre à jour l'affichage
+        updateLocationInfo(lat, lng);
+        
+        // Géocoder pour obtenir l'adresse
+        geocodeLatLng(lat, lng);
+    });
+    
+    // Bouton position actuelle
+    document.getElementById('btn-current-location').addEventListener('click', function() {
+        if (navigator.geolocation) {
+            navigator.geolocation.getCurrentPosition(function(position) {
+                const pos = {
+                    lat: position.coords.latitude,
+                    lng: position.coords.longitude
+                };
+                
+                map.setCenter(pos);
+                marker.setPosition(pos);
+                
+                // Mettre à jour les champs
+                document.getElementById('id_latitude').value = pos.lat.toFixed(6);
+                document.getElementById('id_longitude').value = pos.lng.toFixed(6);
+                
+                updateLocationInfo(pos.lat, pos.lng);
+                geocodeLatLng(pos.lat, pos.lng);
+                
+                showNotification('Position actuelle récupérée !', 'success');
+            }, function() {
+                showNotification('Impossible de récupérer votre position', 'error');
+            });
+        } else {
+            showNotification('La géolocalisation n\'est pas supportée', 'error');
+        }
+    });
+    
+    // Bouton centrer sur Dakar
+    document.getElementById('btn-center-dakar').addEventListener('click', function() {
+        map.setCenter(dakar);
+        marker.setPosition(dakar);
+        
+        document.getElementById('id_latitude').value = dakar.lat.toFixed(6);
+        document.getElementById('id_longitude').value = dakar.lng.toFixed(6);
+        
+        updateLocationInfo(dakar.lat, dakar.lng);
+        geocodeLatLng(dakar.lat, dakar.lng);
+    });
+}
+
+// Mettre à jour les informations de localisation
+function updateLocationInfo(lat, lng) {
+    document.getElementById('selected-lat').textContent = lat.toFixed(6);
+    document.getElementById('selected-lng').textContent = lng.toFixed(6);
+}
+
+// Géocoder les coordonnées pour obtenir l'adresse
+function geocodeLatLng(lat, lng) {
+    const latlng = { lat: lat, lng: lng };
+    
+    geocoder.geocode({ location: latlng }, function(results, status) {
+        if (status === 'OK') {
+            if (results[0]) {
+                const address = results[0].formatted_address;
+                document.getElementById('selected-address').textContent = address;
+                
+                // Mettre à jour le champ lieu si vide
+                const lieuField = document.getElementById('id_lieu');
+                if (!lieuField.value) {
+                    lieuField.value = address;
+                }
+            } else {
+                document.getElementById('selected-address').textContent = 'Adresse non trouvée';
+            }
+        } else {
+            document.getElementById('selected-address').textContent = 'Erreur de géocodage';
+        }
+    });
+}
+
+// Validation du formulaire
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.getElementById('signalement-form');
+    form.addEventListener('submit', function(e) {
+        if (!validateForm('signalement-form')) {
+            e.preventDefault();
+            showNotification('Veuillez remplir tous les champs obligatoires', 'error');
+        }
+    });
+
+    // Prévisualisation de l'image
+    const photoInput = document.getElementById('id_photo');
+    if (photoInput) {
+        photoInput.addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    let preview = document.getElementById('photo-preview');
+                    if (!preview) {
+                        preview = document.createElement('div');
+                        preview.id = 'photo-preview';
+                        preview.className = 'mt-2';
+                        photoInput.parentNode.appendChild(preview);
+                    }
+                    preview.innerHTML = `
+                        <img src="${e.target.result}" alt="Aperçu" class="w-32 h-32 object-cover rounded-lg border">
+                        <p class="text-sm text-gray-500 mt-1">Aperçu de l'image</p>
+                    `;
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+    }
+});
+</script>
+{% endblock %}

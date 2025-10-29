@@ -1,0 +1,145 @@
+{% extends 'base/base.html' %}
+{% load static %}
+
+{% block title %}Liste des signalements - AidConnect{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <!-- En-tête -->
+    <div class="text-center mb-8">
+        <h1 class="text-3xl font-bold text-gray-900 mb-4">
+            <i class="fas fa-list text-blue-600 mr-3"></i>
+            Liste des signalements
+        </h1>
+        <p class="text-lg text-gray-600">
+            Consultez tous les signalements de malades mentaux
+        </p>
+    </div>
+
+    <!-- Filtres -->
+    <div class="bg-white rounded-lg shadow-md p-6 mb-6">
+        <h3 class="text-lg font-semibold text-gray-900 mb-4">
+            <i class="fas fa-filter mr-2"></i>Filtres
+        </h3>
+        <form method="get" class="grid grid-cols-1 md:grid-cols-4 gap-4">
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Statut</label>
+                <select name="statut" class="form-control">
+                    <option value="">Tous les statuts</option>
+                    <option value="nouveau" {% if statut == 'nouveau' %}selected{% endif %}>Nouveau</option>
+                    <option value="en_cours" {% if statut == 'en_cours' %}selected{% endif %}>En cours</option>
+                    <option value="pris_en_charge" {% if statut == 'pris_en_charge' %}selected{% endif %}>Pris en charge</option>
+                    <option value="resolu" {% if statut == 'resolu' %}selected{% endif %}>Résolu</option>
+                    <option value="ferme" {% if statut == 'ferme' %}selected{% endif %}>Fermé</option>
+                </select>
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Urgence</label>
+                <select name="urgence" class="form-control">
+                    <option value="">Tous les niveaux</option>
+                    <option value="critique" {% if urgence == 'critique' %}selected{% endif %}>Critique</option>
+                    <option value="elevee" {% if urgence == 'elevee' %}selected{% endif %}>Élevée</option>
+                    <option value="moyenne" {% if urgence == 'moyenne' %}selected{% endif %}>Moyenne</option>
+                    <option value="faible" {% if urgence == 'faible' %}selected{% endif %}>Faible</option>
+                </select>
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Zone</label>
+                <input type="text" name="zone" value="{{ zone }}" placeholder="Ex: Dakar" class="form-control">
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Recherche</label>
+                <input type="text" name="recherche" value="{{ recherche }}" placeholder="Mots-clés..." class="form-control">
+            </div>
+            <div class="md:col-span-4 flex space-x-4">
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-search mr-2"></i>Filtrer
+                </button>
+                <a href="{% url 'signalements:liste' %}" class="btn btn-secondary">
+                    <i class="fas fa-undo mr-2"></i>Réinitialiser
+                </a>
+            </div>
+        </form>
+    </div>
+
+    <!-- Liste des signalements -->
+    {% if page_obj %}
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+            {% for signalement in page_obj %}
+                <div class="signalement-card {{ signalement.statut }}">
+                    <div class="card-body">
+                        <div class="flex justify-between items-start mb-3">
+                            <h3 class="font-semibold text-gray-900">{{ signalement.lieu }}</h3>
+                            <span class="badge status-{{ signalement.statut }}">
+                                {{ signalement.get_statut_display }}
+                            </span>
+                        </div>
+                        <p class="text-gray-600 text-sm mb-3 line-clamp-3">
+                            {{ signalement.description|truncatewords:20 }}
+                        </p>
+                        <div class="flex justify-between items-center mb-3">
+                            <span class="badge urgence-{{ signalement.niveau_urgence }}">
+                                {{ signalement.get_niveau_urgence_display }}
+                            </span>
+                            <span class="text-xs text-gray-500">
+                                {{ signalement.date_signalement|date:"d/m/Y H:i" }}
+                            </span>
+                        </div>
+                        {% if signalement.photo %}
+                            <div class="mb-3">
+                                <img src="{{ signalement.photo.url }}" alt="Photo du signalement" class="w-full h-32 object-cover rounded">
+                            </div>
+                        {% endif %}
+                    </div>
+                    <div class="card-footer">
+                        <a href="{% url 'signalements:detail' signalement.pk %}" class="btn btn-outline btn-sm w-full">
+                            <i class="fas fa-eye mr-1"></i>Voir détails
+                        </a>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+
+        <!-- Pagination -->
+        {% if page_obj.has_other_pages %}
+            <div class="flex justify-center">
+                <nav class="pagination">
+                    {% if page_obj.has_previous %}
+                        <a href="?page=1{% if statut %}&statut={{ statut }}{% endif %}{% if urgence %}&urgence={{ urgence }}{% endif %}{% if zone %}&zone={{ zone }}{% endif %}{% if recherche %}&recherche={{ recherche }}{% endif %}" class="pagination-link">
+                            <i class="fas fa-angle-double-left"></i>
+                        </a>
+                        <a href="?page={{ page_obj.previous_page_number }}{% if statut %}&statut={{ statut }}{% endif %}{% if urgence %}&urgence={{ urgence }}{% endif %}{% if zone %}&zone={{ zone }}{% endif %}{% if recherche %}&recherche={{ recherche }}{% endif %}" class="pagination-link">
+                            <i class="fas fa-angle-left"></i>
+                        </a>
+                    {% endif %}
+
+                    {% for num in page_obj.paginator.page_range %}
+                        {% if page_obj.number == num %}
+                            <span class="pagination-current">{{ num }}</span>
+                        {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                            <a href="?page={{ num }}{% if statut %}&statut={{ statut }}{% endif %}{% if urgence %}&urgence={{ urgence }}{% endif %}{% if zone %}&zone={{ zone }}{% endif %}{% if recherche %}&recherche={{ recherche }}{% endif %}" class="pagination-link">{{ num }}</a>
+                        {% endif %}
+                    {% endfor %}
+
+                    {% if page_obj.has_next %}
+                        <a href="?page={{ page_obj.next_page_number }}{% if statut %}&statut={{ statut }}{% endif %}{% if urgence %}&urgence={{ urgence }}{% endif %}{% if zone %}&zone={{ zone }}{% endif %}{% if recherche %}&recherche={{ recherche }}{% endif %}" class="pagination-link">
+                            <i class="fas fa-angle-right"></i>
+                        </a>
+                        <a href="?page={{ page_obj.paginator.num_pages }}{% if statut %}&statut={{ statut }}{% endif %}{% if urgence %}&urgence={{ urgence }}{% endif %}{% if zone %}&zone={{ zone }}{% endif %}{% if recherche %}&recherche={{ recherche }}{% endif %}" class="pagination-link">
+                            <i class="fas fa-angle-double-right"></i>
+                        </a>
+                    {% endif %}
+                </nav>
+            </div>
+        {% endif %}
+    {% else %}
+        <div class="text-center py-12">
+            <i class="fas fa-inbox text-6xl text-gray-300 mb-4"></i>
+            <p class="text-gray-500 text-lg mb-4">Aucun signalement trouvé</p>
+            <a href="{% url 'signalements:signaler' %}" class="btn btn-primary">
+                <i class="fas fa-plus mr-2"></i>Faire le premier signalement
+            </a>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

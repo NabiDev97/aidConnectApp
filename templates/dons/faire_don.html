@@ -1,0 +1,299 @@
+{% extends 'base/base.html' %}
+{% load crispy_forms_tags %}
+
+{% block title %}Faire un don - AidConnect{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <!-- En-tête -->
+    <div class="text-center mb-8">
+        <h1 class="text-3xl font-bold text-gray-900 mb-4">
+            <i class="fas fa-gift text-green-600 mr-3"></i>
+            Faire un don
+        </h1>
+        <p class="text-lg text-gray-600">
+            Votre contribution aide les associations à intervenir auprès des malades mentaux
+        </p>
+    </div>
+
+    <!-- Formulaire de don -->
+    <div class="card">
+        <div class="card-header">
+            <h2 class="text-xl font-semibold text-gray-900">
+                <i class="fas fa-edit mr-2"></i>Informations du don
+            </h2>
+            <p class="text-sm text-gray-600 mt-1">
+                Tous les champs marqués d'un * sont obligatoires
+            </p>
+        </div>
+        
+        <div class="card-body">
+            <form method="post" id="don-form">
+                {% csrf_token %}
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <!-- Type de don -->
+                    <div>
+                        <label for="{{ form.type_don.id_for_label }}" class="form-label">
+                            <i class="fas fa-tag mr-1"></i>Type de don *
+                        </label>
+                        {{ form.type_don }}
+                        {% if form.type_don.errors %}
+                            <div class="invalid-feedback">{{ form.type_don.errors.0 }}</div>
+                        {% endif %}
+                    </div>
+
+                    <!-- Montant -->
+                    <div>
+                        <label for="{{ form.montant.id_for_label }}" class="form-label">
+                            <i class="fas fa-money-bill-wave mr-1"></i>Montant (FCFA) *
+                        </label>
+                        <div class="relative">
+                            {{ form.montant }}
+                            <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+                                <span class="text-gray-500 sm:text-sm">FCFA</span>
+                            </div>
+                        </div>
+                        {% if form.montant.errors %}
+                            <div class="invalid-feedback">{{ form.montant.errors.0 }}</div>
+                        {% endif %}
+                    </div>
+
+                    <!-- Association -->
+                    <div class="md:col-span-2">
+                        <label for="{{ form.association.id_for_label }}" class="form-label">
+                            <i class="fas fa-building mr-1"></i>Association bénéficiaire *
+                        </label>
+                        {{ form.association }}
+                        {% if form.association.errors %}
+                            <div class="invalid-feedback">{{ form.association.errors.0 }}</div>
+                        {% endif %}
+                        <p class="text-sm text-gray-500 mt-1">
+                            Choisissez l'association qui recevra votre don
+                        </p>
+                    </div>
+
+                    <!-- Description -->
+                    <div class="md:col-span-2">
+                        <label for="{{ form.description.id_for_label }}" class="form-label">
+                            <i class="fas fa-align-left mr-1"></i>Description du don
+                        </label>
+                        {{ form.description }}
+                        {% if form.description.errors %}
+                            <div class="invalid-feedback">{{ form.description.errors.0 }}</div>
+                        {% endif %}
+                        <p class="text-sm text-gray-500 mt-1">
+                            Décrivez votre don (ex: "Achat de médicaments", "Frais de transport", etc.)
+                        </p>
+                    </div>
+
+                    <!-- Campagne -->
+                    <div class="md:col-span-2">
+                        <label for="{{ form.campagne.id_for_label }}" class="form-label">
+                            <i class="fas fa-bullhorn mr-1"></i>Campagne (optionnel)
+                        </label>
+                        {{ form.campagne }}
+                        {% if form.campagne.errors %}
+                            <div class="invalid-feedback">{{ form.campagne.errors.0 }}</div>
+                        {% endif %}
+                        <p class="text-sm text-gray-500 mt-1">
+                            Si votre don est lié à une campagne spécifique
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Informations importantes -->
+                <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 mt-6">
+                    <h4 class="font-semibold text-blue-900 mb-2">
+                        <i class="fas fa-info-circle mr-2"></i>Informations importantes
+                    </h4>
+                    <ul class="text-sm text-blue-800 space-y-1">
+                        <li>• Votre don sera transmis directement à l'association sélectionnée</li>
+                        <li>• Vous recevrez un reçu de don par email</li>
+                        <li>• Les associations s'engagent à utiliser les fonds pour leurs missions</li>
+                        <li>• Vous pouvez suivre l'impact de votre don sur la plateforme</li>
+                    </ul>
+                </div>
+
+                <!-- Boutons -->
+                <div class="flex flex-col sm:flex-row gap-4 mt-8">
+                    <button type="submit" class="btn btn-primary flex-1">
+                        <i class="fas fa-paper-plane mr-2"></i>Confirmer le don
+                    </button>
+                    <a href="{% url 'dons:campagnes' %}" class="btn btn-secondary flex-1">
+                        <i class="fas fa-bullhorn mr-2"></i>Voir les campagnes
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Montants suggérés -->
+    <div class="mt-8">
+        <h3 class="text-lg font-semibold text-gray-900 mb-4">
+            <i class="fas fa-lightbulb mr-2"></i>Montants suggérés
+        </h3>
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <button onclick="setAmount(5000)" class="btn btn-outline text-center">
+                <div class="text-lg font-semibold">5 000 FCFA</div>
+                <div class="text-sm text-gray-500">Aide ponctuelle</div>
+            </button>
+            <button onclick="setAmount(15000)" class="btn btn-outline text-center">
+                <div class="text-lg font-semibold">15 000 FCFA</div>
+                <div class="text-sm text-gray-500">Aide régulière</div>
+            </button>
+            <button onclick="setAmount(50000)" class="btn btn-outline text-center">
+                <div class="text-lg font-semibold">50 000 FCFA</div>
+                <div class="text-sm text-gray-500">Aide importante</div>
+            </button>
+            <button onclick="setAmount(100000)" class="btn btn-outline text-center">
+                <div class="text-lg font-semibold">100 000 FCFA</div>
+                <div class="text-sm text-gray-500">Aide majeure</div>
+            </button>
+        </div>
+    </div>
+
+    <!-- Statistiques -->
+    <div class="mt-8 grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div class="card">
+            <div class="card-body text-center">
+                <i class="fas fa-users text-3xl text-blue-600 mb-2"></i>
+                <h3 class="text-lg font-semibold text-gray-900">Associations</h3>
+                <p class="text-2xl font-bold text-blue-600">{{ total_associations }}</p>
+                <p class="text-sm text-gray-600">Actives sur la plateforme</p>
+            </div>
+        </div>
+        
+        <div class="card">
+            <div class="card-body text-center">
+                <i class="fas fa-gift text-3xl text-green-600 mb-2"></i>
+                <h3 class="text-lg font-semibold text-gray-900">Dons reçus</h3>
+                <p class="text-2xl font-bold text-green-600">{{ total_dons }}</p>
+                <p class="text-sm text-gray-600">Cette année</p>
+            </div>
+        </div>
+        
+        <div class="card">
+            <div class="card-body text-center">
+                <i class="fas fa-chart-line text-3xl text-purple-600 mb-2"></i>
+                <h3 class="text-lg font-semibold text-gray-900">Montant collecté</h3>
+                <p class="text-2xl font-bold text-purple-600">{{ montant_total|floatformat:0 }} FCFA</p>
+                <p class="text-sm text-gray-600">Total collecté</p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Validation du formulaire
+    const form = document.getElementById('don-form');
+    form.addEventListener('submit', function(e) {
+        if (!validateForm('don-form')) {
+            e.preventDefault();
+            showNotification('Veuillez remplir tous les champs obligatoires', 'error');
+        }
+    });
+
+    // Formatage du montant
+    const montantInput = document.getElementById('id_montant');
+    if (montantInput) {
+        montantInput.addEventListener('input', function(e) {
+            let value = e.target.value.replace(/\D/g, ''); // Supprimer tout sauf les chiffres
+            if (value) {
+                // Ajouter des espaces pour la lisibilité
+                value = parseInt(value).toLocaleString('fr-FR');
+                e.target.value = value;
+            }
+        });
+    }
+});
+
+// Fonction pour définir le montant
+function setAmount(amount) {
+    const montantInput = document.getElementById('id_montant');
+    if (montantInput) {
+        montantInput.value = amount.toLocaleString('fr-FR');
+        montantInput.focus();
+        
+        // Animation du bouton cliqué
+        event.target.classList.add('bg-green-100', 'border-green-500');
+        setTimeout(() => {
+            event.target.classList.remove('bg-green-100', 'border-green-500');
+        }, 1000);
+    }
+}
+
+// Fonction pour afficher les notifications
+function showNotification(message, type = 'info') {
+    // Créer l'élément de notification
+    const notification = document.createElement('div');
+    notification.className = `fixed top-4 right-4 z-50 p-4 rounded-lg shadow-lg max-w-sm ${getNotificationClass(type)}`;
+    notification.innerHTML = `
+        <div class="flex items-center">
+            <i class="fas ${getNotificationIcon(type)} mr-2"></i>
+            <span>${message}</span>
+            <button onclick="this.parentElement.parentElement.remove()" class="ml-4 text-lg">&times;</button>
+        </div>
+    `;
+    
+    // Ajouter au DOM
+    document.body.appendChild(notification);
+    
+    // Supprimer automatiquement après 5 secondes
+    setTimeout(() => {
+        if (notification.parentElement) {
+            notification.remove();
+        }
+    }, 5000);
+}
+
+// Fonction pour obtenir les classes CSS des notifications
+function getNotificationClass(type) {
+    switch(type) {
+        case 'success':
+            return 'bg-green-100 border border-green-400 text-green-700';
+        case 'error':
+            return 'bg-red-100 border border-red-400 text-red-700';
+        case 'warning':
+            return 'bg-yellow-100 border border-yellow-400 text-yellow-700';
+        default:
+            return 'bg-blue-100 border border-blue-400 text-blue-700';
+    }
+}
+
+// Fonction pour obtenir les icônes des notifications
+function getNotificationIcon(type) {
+    switch(type) {
+        case 'success':
+            return 'fa-check-circle';
+        case 'error':
+            return 'fa-exclamation-circle';
+        case 'warning':
+            return 'fa-exclamation-triangle';
+        default:
+            return 'fa-info-circle';
+    }
+}
+
+// Fonction de validation du formulaire
+function validateForm(formId) {
+    const form = document.getElementById(formId);
+    const requiredFields = form.querySelectorAll('[required]');
+    let isValid = true;
+    
+    requiredFields.forEach(field => {
+        if (!field.value.trim()) {
+            field.classList.add('border-red-500');
+            isValid = false;
+        } else {
+            field.classList.remove('border-red-500');
+        }
+    });
+    
+    return isValid;
+}
+</script>
+{% endblock %}

@@ -1,0 +1,441 @@
+{% extends 'base/base.html' %}
+{% load crispy_forms_tags %}
+
+{% block title %}Signaler un cas - AidConnect{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <!-- En-tête -->
+    <div class="text-center mb-8">
+        <h1 class="text-3xl font-bold text-gray-900 mb-4">
+            <i class="fas fa-exclamation-triangle text-red-600 mr-3"></i>
+            Signaler un cas
+        </h1>
+        <p class="text-lg text-gray-600">
+            Aidez-nous à identifier et aider les malades mentaux dans les rues du Sénégal
+        </p>
+    </div>
+
+    <!-- Formulaire -->
+    <div class="card">
+        <div class="card-header">
+            <h2 class="text-xl font-semibold text-gray-900">
+                <i class="fas fa-edit mr-2"></i>Informations du signalement
+            </h2>
+            <p class="text-sm text-gray-600 mt-1">
+                Tous les champs marqués d'un * sont obligatoires
+            </p>
+        </div>
+        
+        <div class="card-body">
+            <form method="post" enctype="multipart/form-data" id="signalement-form">
+                {% csrf_token %}
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <!-- Lieu -->
+                    <div class="md:col-span-2">
+                        <label for="{{ form.lieu.id_for_label }}" class="form-label">
+                            <i class="fas fa-map-marker-alt mr-1"></i>Lieu du signalement *
+                        </label>
+                        {{ form.lieu }}
+                        {% if form.lieu.errors %}
+                            <div class="invalid-feedback">{{ form.lieu.errors.0 }}</div>
+                        {% endif %}
+                    </div>
+
+                    <!-- Description -->
+                    <div class="md:col-span-2">
+                        <label for="{{ form.description.id_for_label }}" class="form-label">
+                            <i class="fas fa-align-left mr-1"></i>Description de la situation *
+                        </label>
+                        {{ form.description }}
+                        {% if form.description.errors %}
+                            <div class="invalid-feedback">{{ form.description.errors.0 }}</div>
+                        {% endif %}
+                        <p class="text-sm text-gray-500 mt-1">
+                            Décrivez ce que vous observez : comportement, état de la personne, contexte...
+                        </p>
+                    </div>
+
+                    <!-- Niveau d'urgence -->
+                    <div>
+                        <label for="{{ form.niveau_urgence.id_for_label }}" class="form-label">
+                            <i class="fas fa-exclamation-circle mr-1"></i>Niveau d'urgence *
+                        </label>
+                        {{ form.niveau_urgence }}
+                        {% if form.niveau_urgence.errors %}
+                            <div class="invalid-feedback">{{ form.niveau_urgence.errors.0 }}</div>
+                        {% endif %}
+                    </div>
+
+                    <!-- Photo -->
+                    <div>
+                        <label for="{{ form.photo.id_for_label }}" class="form-label">
+                            <i class="fas fa-camera mr-1"></i>Photo (optionnelle)
+                        </label>
+                        {{ form.photo }}
+                        {% if form.photo.errors %}
+                            <div class="invalid-feedback">{{ form.photo.errors.0 }}</div>
+                        {% endif %}
+                        <p class="text-sm text-gray-500 mt-1">
+                            Une photo peut aider les associations à mieux comprendre la situation
+                        </p>
+                    </div>
+
+                    <!-- Position GPS -->
+                    <div class="md:col-span-2">
+                        <h3 class="text-lg font-semibold text-gray-900 mb-4">
+                            <i class="fas fa-map mr-2"></i>Position GPS (optionnel)
+                        </h3>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <label for="{{ form.latitude.id_for_label }}" class="form-label">
+                                    Latitude
+                                </label>
+                                <div class="flex">
+                                    {{ form.latitude }}
+                                    <button type="button" onclick="getCurrentLocation()" class="ml-2 btn btn-secondary">
+                                        <i class="fas fa-crosshairs"></i>
+                                    </button>
+                                </div>
+                                {% if form.latitude.errors %}
+                                    <div class="invalid-feedback">{{ form.latitude.errors.0 }}</div>
+                                {% endif %}
+                            </div>
+                            <div>
+                                <label for="{{ form.longitude.id_for_label }}" class="form-label">
+                                    Longitude
+                                </label>
+                                {{ form.longitude }}
+                                {% if form.longitude.errors %}
+                                    <div class="invalid-feedback">{{ form.longitude.errors.0 }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        
+                        <!-- Lien vers Google Maps -->
+                        <div id="map-link-container" class="mt-4 hidden">
+                            <div class="bg-green-50 border border-green-200 rounded-lg p-4">
+                                <h4 class="font-semibold text-green-900 mb-2">
+                                    <i class="fas fa-map-marked-alt mr-2"></i>Position détectée
+                                </h4>
+                                <p class="text-sm text-green-800 mb-3">
+                                    Votre position a été détectée. Vous pouvez la vérifier sur la carte :
+                                </p>
+                                <a id="map-link" href="#" target="_blank" class="btn btn-success btn-sm">
+                                    <i class="fas fa-external-link-alt mr-2"></i>Voir sur Google Maps
+                                </a>
+                                <button type="button" onclick="clearLocation()" class="ml-2 btn btn-outline btn-sm">
+                                    <i class="fas fa-times mr-1"></i>Effacer
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <p class="text-sm text-gray-500 mt-2">
+                            <i class="fas fa-info-circle mr-1"></i>
+                            Cliquez sur le bouton <i class="fas fa-crosshairs"></i> pour récupérer automatiquement votre position
+                        </p>
+                    </div>
+
+                    <!-- Adresse complète -->
+                    <div class="md:col-span-2">
+                        <label for="{{ form.adresse_complete.id_for_label }}" class="form-label">
+                            <i class="fas fa-home mr-1"></i>Adresse complète (optionnelle)
+                        </label>
+                        {{ form.adresse_complete }}
+                        {% if form.adresse_complete.errors %}
+                            <div class="invalid-feedback">{{ form.adresse_complete.errors.0 }}</div>
+                        {% endif %}
+                    </div>
+
+                    <!-- Contact téléphone -->
+                    <div class="md:col-span-2">
+                        <label for="{{ form.contact_telephone.id_for_label }}" class="form-label">
+                            <i class="fas fa-phone mr-1"></i>Téléphone de contact (optionnel)
+                        </label>
+                        {{ form.contact_telephone }}
+                        {% if form.contact_telephone.errors %}
+                            <div class="invalid-feedback">{{ form.contact_telephone.errors.0 }}</div>
+                        {% endif %}
+                        <p class="text-sm text-gray-500 mt-1">
+                            Laissez votre numéro si vous souhaitez être contacté par l'association
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Informations importantes -->
+                <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 mt-6">
+                    <h4 class="font-semibold text-blue-900 mb-2">
+                        <i class="fas fa-info-circle mr-2"></i>Informations importantes
+                    </h4>
+                    <ul class="text-sm text-blue-800 space-y-1">
+                        <li>• Votre signalement sera transmis aux associations compétentes</li>
+                        <li>• Les informations personnelles sont protégées et confidentielles</li>
+                        <li>• Vous pouvez rester anonyme si vous le souhaitez</li>
+                        <li>• Les associations interviendront dans les plus brefs délais</li>
+                    </ul>
+                </div>
+
+                <!-- Boutons -->
+                <div class="flex flex-col sm:flex-row gap-4 mt-8">
+                    <button type="submit" class="btn btn-primary flex-1">
+                        <i class="fas fa-paper-plane mr-2"></i>Envoyer le signalement
+                    </button>
+                    <a href="{% url 'signalements:home' %}" class="btn btn-secondary flex-1">
+                        <i class="fas fa-arrow-left mr-2"></i>Retour à l'accueil
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Aide -->
+    <div class="mt-8 grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div class="card">
+            <div class="card-body">
+                <h3 class="text-lg font-semibold text-gray-900 mb-3">
+                    <i class="fas fa-question-circle text-blue-600 mr-2"></i>
+                    Que signaler ?
+                </h3>
+                <ul class="text-sm text-gray-600 space-y-2">
+                    <li>• Personnes errant dans les rues</li>
+                    <li>• Comportements inquiétants ou dangereux</li>
+                    <li>• Personnes en détresse psychologique</li>
+                    <li>• Situations nécessitant une intervention médicale</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-body">
+                <h3 class="text-lg font-semibold text-gray-900 mb-3">
+                    <i class="fas fa-phone text-green-600 mr-2"></i>
+                    Urgences
+                </h3>
+                <p class="text-sm text-gray-600 mb-3">
+                    En cas d'urgence immédiate, contactez directement :
+                </p>
+                <div class="space-y-2">
+                    <p class="text-sm font-medium">
+                        <i class="fas fa-phone mr-2"></i>Police : 17
+                    </p>
+                    <p class="text-sm font-medium">
+                        <i class="fas fa-ambulance mr-2"></i>Samu : 15
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Variables globales pour la géolocalisation
+let currentPosition = null;
+
+document.addEventListener('DOMContentLoaded', function() {
+    // Validation du formulaire
+    const form = document.getElementById('signalement-form');
+    form.addEventListener('submit', function(e) {
+        if (!validateForm('signalement-form')) {
+            e.preventDefault();
+            showNotification('Veuillez remplir tous les champs obligatoires', 'error');
+        }
+    });
+
+    // Prévisualisation de l'image
+    const photoInput = document.getElementById('id_photo');
+    if (photoInput) {
+        photoInput.addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    // Créer une prévisualisation
+                    let preview = document.getElementById('photo-preview');
+                    if (!preview) {
+                        preview = document.createElement('div');
+                        preview.id = 'photo-preview';
+                        preview.className = 'mt-2';
+                        photoInput.parentNode.appendChild(preview);
+                    }
+                    preview.innerHTML = `
+                        <img src="${e.target.result}" alt="Aperçu" class="w-32 h-32 object-cover rounded-lg border">
+                        <p class="text-sm text-gray-500 mt-1">Aperçu de l'image</p>
+                    `;
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+    }
+});
+
+// Fonction pour obtenir la position actuelle
+function getCurrentLocation() {
+    const button = event.target.closest('button');
+    const originalText = button.innerHTML;
+    
+    // Afficher un indicateur de chargement
+    button.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+    button.disabled = true;
+    
+    if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(
+            function(position) {
+                const lat = position.coords.latitude;
+                const lng = position.coords.longitude;
+                
+                // Mettre à jour les champs
+                document.getElementById('id_latitude').value = lat.toFixed(6);
+                document.getElementById('id_longitude').value = lng.toFixed(6);
+                
+                // Stocker la position
+                currentPosition = { lat: lat, lng: lng };
+                
+                // Générer le lien Google Maps
+                generateMapLink(lat, lng);
+                
+                // Afficher le conteneur du lien
+                document.getElementById('map-link-container').classList.remove('hidden');
+                
+                // Restaurer le bouton
+                button.innerHTML = originalText;
+                button.disabled = false;
+                
+                // Afficher une notification de succès
+                showNotification('Position détectée avec succès !', 'success');
+            },
+            function(error) {
+                // Restaurer le bouton
+                button.innerHTML = originalText;
+                button.disabled = false;
+                
+                let errorMessage = 'Erreur lors de la géolocalisation : ';
+                switch(error.code) {
+                    case error.PERMISSION_DENIED:
+                        errorMessage += 'Permission refusée. Veuillez autoriser l\'accès à votre position.';
+                        break;
+                    case error.POSITION_UNAVAILABLE:
+                        errorMessage += 'Position non disponible.';
+                        break;
+                    case error.TIMEOUT:
+                        errorMessage += 'Délai d\'attente dépassé.';
+                        break;
+                    default:
+                        errorMessage += 'Erreur inconnue.';
+                        break;
+                }
+                
+                showNotification(errorMessage, 'error');
+            },
+            {
+                enableHighAccuracy: true,
+                timeout: 10000,
+                maximumAge: 300000 // 5 minutes
+            }
+        );
+    } else {
+        // Restaurer le bouton
+        button.innerHTML = originalText;
+        button.disabled = false;
+        showNotification('La géolocalisation n\'est pas supportée par votre navigateur.', 'error');
+    }
+}
+
+// Fonction pour générer le lien Google Maps
+function generateMapLink(lat, lng) {
+    const mapLink = document.getElementById('map-link');
+    const googleMapsUrl = `https://www.google.com/maps?q=${lat},${lng}&z=15&t=m`;
+    mapLink.href = googleMapsUrl;
+    
+    // Mettre à jour le texte du lien avec les coordonnées
+    mapLink.innerHTML = `<i class="fas fa-external-link-alt mr-2"></i>Voir sur Google Maps (${lat.toFixed(4)}, ${lng.toFixed(4)})`;
+}
+
+// Fonction pour effacer la position
+function clearLocation() {
+    // Vider les champs
+    document.getElementById('id_latitude').value = '';
+    document.getElementById('id_longitude').value = '';
+    
+    // Cacher le conteneur du lien
+    document.getElementById('map-link-container').classList.add('hidden');
+    
+    // Réinitialiser la position
+    currentPosition = null;
+    
+    showNotification('Position effacée', 'info');
+}
+
+// Fonction pour afficher les notifications
+function showNotification(message, type = 'info') {
+    // Créer l'élément de notification
+    const notification = document.createElement('div');
+    notification.className = `fixed top-4 right-4 z-50 p-4 rounded-lg shadow-lg max-w-sm ${getNotificationClass(type)}`;
+    notification.innerHTML = `
+        <div class="flex items-center">
+            <i class="fas ${getNotificationIcon(type)} mr-2"></i>
+            <span>${message}</span>
+            <button onclick="this.parentElement.parentElement.remove()" class="ml-4 text-lg">&times;</button>
+        </div>
+    `;
+    
+    // Ajouter au DOM
+    document.body.appendChild(notification);
+    
+    // Supprimer automatiquement après 5 secondes
+    setTimeout(() => {
+        if (notification.parentElement) {
+            notification.remove();
+        }
+    }, 5000);
+}
+
+// Fonction pour obtenir les classes CSS des notifications
+function getNotificationClass(type) {
+    switch(type) {
+        case 'success':
+            return 'bg-green-100 border border-green-400 text-green-700';
+        case 'error':
+            return 'bg-red-100 border border-red-400 text-red-700';
+        case 'warning':
+            return 'bg-yellow-100 border border-yellow-400 text-yellow-700';
+        default:
+            return 'bg-blue-100 border border-blue-400 text-blue-700';
+    }
+}
+
+// Fonction pour obtenir les icônes des notifications
+function getNotificationIcon(type) {
+    switch(type) {
+        case 'success':
+            return 'fa-check-circle';
+        case 'error':
+            return 'fa-exclamation-circle';
+        case 'warning':
+            return 'fa-exclamation-triangle';
+        default:
+            return 'fa-info-circle';
+    }
+}
+
+// Fonction de validation du formulaire
+function validateForm(formId) {
+    const form = document.getElementById(formId);
+    const requiredFields = form.querySelectorAll('[required]');
+    let isValid = true;
+    
+    requiredFields.forEach(field => {
+        if (!field.value.trim()) {
+            field.classList.add('border-red-500');
+            isValid = false;
+        } else {
+            field.classList.remove('border-red-500');
+        }
+    });
+    
+    return isValid;
+}
+</script>
+{% endblock %}
