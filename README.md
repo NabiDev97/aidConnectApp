@@ -2,7 +2,7 @@
 
 ## 🎯 Description du Projet
 
-AidConnect est une plateforme web solidaire développée pour le Sénégal, permettant de signaler des malades mentaux dans les rues, d'alerter les associations locales et de faciliter les dons pour soutenir les actions d'aide.
+AidConnect est une plateforme web solidaire développée pour le Sénégal, permettant de signaler des malades mentaux en difficulté dans les rues, d'alerter les associations locales et de faciliter les dons pour soutenir les actions d'aide.
 
 ## ✨ Fonctionnalités Principales
 
