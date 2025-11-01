@@ -1,0 +1,15 @@
+services:
+  - type: web
+    name: aidconnect
+    env: python
+    plan: free
+    buildCommand: |
+      pip install -r requirements.txt
+      python manage.py migrate --noinput
+      python manage.py collectstatic --noinput
+    startCommand: gunicorn aidconnect.wsgi:application
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.13.4
+      - key: DJANGO_SETTINGS_MODULE
+        value: aidconnect.settings
