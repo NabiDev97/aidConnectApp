@@ -7,7 +7,7 @@ services:
       pip install -r requirements.txt
       python manage.py migrate --noinput
       python manage.py collectstatic --noinput
-    startCommand: gunicorn aidconnect.wsgi:application
+    startCommand: chmod +x start.sh && ./start.sh
     envVars:
       - key: PYTHON_VERSION
         value: 3.13.4

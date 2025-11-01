@@ -1,1 +1,1 @@
-web: gunicorn aidconnect.wsgi:application
+web: chmod +x start.sh && ./start.sh
