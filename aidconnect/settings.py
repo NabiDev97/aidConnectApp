@@ -27,16 +27,26 @@ SECRET_KEY = config('SECRET_KEY', default='django-insecure-qubi3ilierm8k70l635*z
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = config('DEBUG', default=True, cast=bool)
 
-ALLOWED_HOSTS = config(
-    'ALLOWED_HOSTS', 
-    default='localhost,127.0.0.1,aidconnect-sn.onrender.com', 
-    cast=lambda v: [s.strip() for s in v.split(',') if s.strip()]
-)
-CSRF_TRUSTED_ORIGINS = config(
-    'CSRF_TRUSTED_ORIGINS', 
-    default='https://aidconnect-sn.onrender.com', 
-    cast=lambda v: [s.strip() for s in v.split(',') if s.strip()]
-)
+# Parse ALLOWED_HOSTS from environment or use defaults
+_allowed_hosts_env = config('ALLOWED_HOSTS', default='', cast=str)
+if _allowed_hosts_env:
+    ALLOWED_HOSTS = [s.strip() for s in _allowed_hosts_env.split(',') if s.strip()]
+else:
+    ALLOWED_HOSTS = ['localhost', '127.0.0.1']
+
+# Always add Render domain if not already present
+if 'aidconnect-sn.onrender.com' not in ALLOWED_HOSTS:
+    ALLOWED_HOSTS.append('aidconnect-sn.onrender.com')
+# Parse CSRF_TRUSTED_ORIGINS from environment or use defaults
+_csrf_origins_env = config('CSRF_TRUSTED_ORIGINS', default='', cast=str)
+if _csrf_origins_env:
+    CSRF_TRUSTED_ORIGINS = [s.strip() for s in _csrf_origins_env.split(',') if s.strip()]
+else:
+    CSRF_TRUSTED_ORIGINS = []
+
+# Always add Render origin if not already present
+if 'https://aidconnect-sn.onrender.com' not in CSRF_TRUSTED_ORIGINS:
+    CSRF_TRUSTED_ORIGINS.append('https://aidconnect-sn.onrender.com')
 
 
 # Application definition
