@@ -25,7 +25,8 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = config('SECRET_KEY', default='django-insecure-qubi3ilierm8k70l635*zl2ucy(5arvp09f6+%=-y$*)achjeq')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = config('DEBUG', default=True, cast=bool)
+# Default to False so production without an explicit DEBUG env var is not in debug mode.
+DEBUG = config('DEBUG', default=False, cast=bool)
 
 # Parse ALLOWED_HOSTS from environment or use defaults
 _allowed_hosts_env = config('ALLOWED_HOSTS', default='', cast=str)
@@ -68,7 +69,7 @@ INSTALLED_APPS = [
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     # Optionnel mais recommandé en prod pour servir les fichiers statiques
-    # 'whitenoise.middleware.WhiteNoiseMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -155,6 +156,11 @@ STATIC_ROOT = BASE_DIR / 'staticfiles'
 STATICFILES_DIRS = [
     BASE_DIR / "static",
 ]
+
+# Use WhiteNoise's compressed storage in production to serve static files efficiently.
+# Use the non-manifest storage temporarily to avoid collectstatic failures while
+# fixing any missing static references that break ManifestStaticFilesStorage.
+STATICFILES_STORAGE = 'whitenoise.storage.CompressedStaticFilesStorage'
 
 # Media files
 MEDIA_URL = '/media/'
