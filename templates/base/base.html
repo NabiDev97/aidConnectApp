@@ -103,28 +103,28 @@
                 </div>
                 
                 <!-- Navigation desktop avec indicateurs visuels -->
-                <div class="hidden md:flex items-center space-x-1">
-                    <a href="{% url 'signalements:home' %}" class="nav-link group relative">
+                <div class="hidden md:flex items-center space-x-6">
+                    <a href="{% url 'signalements:home' %}" class="nav-link md:px-4 lg:px-6 group relative">
                         <i class="fas fa-home mr-2"></i> 
                         <span>Accueil</span>
                         <div class="nav-indicator"></div>
                     </a>
-                    <a href="{% url 'signalements:signaler' %}" class="nav-link group relative">
+                    <a href="{% url 'signalements:signaler' %}" class="nav-link md:px-4 lg:px-6 group relative">
                         <i class="fas fa-exclamation-triangle mr-2"></i> 
                         <span>Signaler</span>
                         <div class="nav-indicator"></div>
                     </a>
-                    <a href="{% url 'signalements:carte' %}" class="nav-link group relative">
+                    <a href="{% url 'signalements:carte' %}" class="nav-link md:px-4 lg:px-6 group relative">
                         <i class="fas fa-map mr-2"></i> 
                         <span>Carte</span>
                         <div class="nav-indicator"></div>
                     </a>
-                    <a href="{% url 'associations:liste' %}" class="nav-link group relative">
+                    <a href="{% url 'associations:liste' %}" class="nav-link md:px-4 lg:px-6 group relative">
                         <i class="fas fa-users mr-2"></i> 
                         <span>Associations</span>
                         <div class="nav-indicator"></div>
                     </a>
-                    <a href="{% url 'dons:liste' %}" class="nav-link group relative">
+                    <a href="{% url 'dons:liste' %}" class="nav-link md:px-4 lg:px-6 group relative">
                         <i class="fas fa-hand-holding-heart mr-2"></i> 
                         <span>Dons</span>
                         <div class="nav-indicator"></div>
@@ -193,20 +193,20 @@
         <div id="mobile-menu" class="md:hidden hidden bg-white border-t border-gray-200 shadow-lg">
             <div class="px-4 py-4 space-y-2">
                 <!-- Navigation principale -->
-                <div class="grid grid-cols-2 gap-2 mb-4">
-                    <a href="{% url 'signalements:home' %}" class="mobile-nav-item flex items-center justify-center p-3 rounded-lg bg-gray-50 hover:bg-primary-50 hover:text-primary-600 transition-all duration-200">
+                <div class="grid grid-cols-2 gap-4 mb-4">
+                    <a href="{% url 'signalements:home' %}" class="mobile-nav-item flex items-center justify-center py-3 px-4 rounded-lg bg-gray-50 hover:bg-primary-50 hover:text-primary-600 transition-all duration-200">
                         <i class="fas fa-home mr-2"></i> 
                         <span class="text-sm font-medium">Accueil</span>
                     </a>
-                    <a href="{% url 'signalements:signaler' %}" class="mobile-nav-item flex items-center justify-center p-3 rounded-lg bg-gray-50 hover:bg-red-50 hover:text-red-600 transition-all duration-200">
+                    <a href="{% url 'signalements:signaler' %}" class="mobile-nav-item flex items-center justify-center py-3 px-4 rounded-lg bg-gray-50 hover:bg-red-50 hover:text-red-600 transition-all duration-200">
                         <i class="fas fa-exclamation-triangle mr-2"></i> 
                         <span class="text-sm font-medium">Signaler</span>
                     </a>
-                    <a href="{% url 'signalements:carte' %}" class="mobile-nav-item flex items-center justify-center p-3 rounded-lg bg-gray-50 hover:bg-green-50 hover:text-green-600 transition-all duration-200">
+                    <a href="{% url 'signalements:carte' %}" class="mobile-nav-item flex items-center justify-center py-3 px-4 rounded-lg bg-gray-50 hover:bg-green-50 hover:text-green-600 transition-all duration-200">
                         <i class="fas fa-map mr-2"></i> 
                         <span class="text-sm font-medium">Carte</span>
                     </a>
-                    <a href="{% url 'associations:liste' %}" class="mobile-nav-item flex items-center justify-center p-3 rounded-lg bg-gray-50 hover:bg-blue-50 hover:text-blue-600 transition-all duration-200">
+                    <a href="{% url 'associations:liste' %}" class="mobile-nav-item flex items-center justify-center py-3 px-4 rounded-lg bg-gray-50 hover:bg-blue-50 hover:text-blue-600 transition-all duration-200">
                         <i class="fas fa-users mr-2"></i> 
                         <span class="text-sm font-medium">Associations</span>
                     </a>
