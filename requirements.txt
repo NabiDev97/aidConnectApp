@@ -16,7 +16,8 @@ whitenoise==6.7.0
 django-extensions==3.2.3
 
 # DÃ©ploiement / Base de donnÃ©es (Render)
-# Si vous utilisez PostgreSQL sur Render, gardez cette dÃ©pendance :
-psycopg2-binary==2.9.9
+# Utiliser psycopg (psycopg3) avec la roue binaire : compatible avec Python 3.13 et plus facile à installer
+# Si vous utilisez PostgreSQL sur Render, gardez cette dépendance :
+psycopg[binary]
 # Serveur WSGI (souvent requis sur Render pour Django)
 gunicorn==22.0.0
