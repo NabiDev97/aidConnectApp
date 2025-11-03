@@ -38,6 +38,16 @@
     @apply flex items-center px-3 py-2 text-sm font-medium text-gray-700 hover:text-primary-600 hover:bg-gray-100 rounded-lg transition-all duration-200;
 }
 
+/* Hover lift + subtle shadow for better affordance */
+.nav-link {
+    transition: transform 0.12s ease, box-shadow 0.12s ease;
+}
+
+.nav-link:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 20px rgba(14,30,37,0.06);
+}
+
 .nav-indicator {
     @apply absolute bottom-0 left-0 w-full h-0.5 bg-primary-600 transform scale-x-0 transition-transform duration-200;
 }
